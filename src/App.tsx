@@ -1,5 +1,10 @@
 function App() {
-  return <>Hello World!</>;
+  return (
+    <>
+      Hello World! 하하
+      <input type="checkbox" />
+    </>
+  );
 }
 
 export default App;
