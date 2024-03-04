@@ -1,6 +1,6 @@
 # MailedIt!
 
-메일 작성을 완벽하게 해내다, [**_MailedIt!_**](https://mailedit.me/)
+메일 작성을 완벽하게 해내다, [**_MailedIt!_**](https://mailedit.me/)  
 **_MailedIt_** 은 자체 제작 기본 템플릿과 자신만의 메일 템플릿 만들기로 실무 이메일을 보다 쉽게 작성할 수 있도록 돕는 서비스입니다.
 
 <img width="1000" alt="스크린샷_2022-05-03_오후_3 38 50" src="https://user-images.githubusercontent.com/79887293/169654891-18be63bf-d001-4b8f-82f5-00f4adc1682e.png">
