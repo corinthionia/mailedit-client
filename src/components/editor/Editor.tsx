@@ -130,10 +130,9 @@ const Editor: React.FC<Props> = () => {
 };
 
 const Block = styled.div<{ isBlock: boolean }>`
+  ${LIGHT_3};
   width: calc(100% - 28px);
   padding: 4px 12px;
-
-  ${LIGHT_3};
   letter-spacing: -0.5%;
   white-space: pre-wrap;
   word-break: break-word;

@@ -16,6 +16,9 @@ jobs:
         with:
           node-version: 20.11.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+
       - name: Install and Deploy 🚀
         run: |
           pnpm install
