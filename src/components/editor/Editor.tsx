@@ -4,14 +4,15 @@ import { css } from '@emotion/react';
 import { colors } from '@/styles/colors';
 import Typo from '@/ui/typo/Typo';
 import {
+  LIGHT_1,
   LIGHT_3,
-  MEDIUM_1,
-  MEDIUM_4,
+  MEDIUM_0,
   REGULAR_6,
   REGULAR_7,
 } from '@/styles/typo';
 import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
 import TooltipIcon from '@/assets/svgs/workspace_editor_tooltip.svg?react';
+import { breakPoint } from '@/styles/breakPoint';
 
 interface Props {}
 
@@ -66,7 +67,7 @@ const Editor: React.FC<Props> = () => {
   return (
     <Wrapper>
       <TemplateInfoWrapper>
-        <div>
+        <InfoWrapper>
           <TitleInput
             placeholder="템플릿의 제목을 입력하세요"
             spellCheck={false}
@@ -74,17 +75,17 @@ const Editor: React.FC<Props> = () => {
           />
 
           <InfoItemWrapper>
-            <Typo type={REGULAR_6}>메모</Typo>
+            <Typo type={REGULAR_7}>메모</Typo>
             <MemoInput
               placeholder="상황, 받는 사람, 목적 등을 입력하세요"
               spellCheck={false}
             />
           </InfoItemWrapper>
           <InfoItemWrapper>
-            <Typo type={REGULAR_6}>그룹</Typo>
+            <Typo type={REGULAR_7}>그룹</Typo>
             <GroupButton>그룹 지정하기</GroupButton>
           </InfoItemWrapper>
-        </div>
+        </InfoWrapper>
         <TooltipButton />
       </TemplateInfoWrapper>
 
@@ -129,25 +130,20 @@ const Editor: React.FC<Props> = () => {
 };
 
 const Block = styled.div<{ isBlock: boolean }>`
-  ${LIGHT_3};
-  letter-spacing: -0.5%;
-  border-radius: 2px;
   width: calc(100% - 28px);
   padding: 4px 12px;
 
+  ${LIGHT_3};
+  letter-spacing: -0.5%;
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 150%;
-
   background: none;
+  border-radius: 2px;
   border: 1px solid transparent;
 
   &:focus {
     outline: none;
-  }
-
-  ::selection {
-    background-color: #cbe5f3;
   }
 
   ${(props) =>
@@ -156,6 +152,10 @@ const Block = styled.div<{ isBlock: boolean }>`
       background: rgba(82, 116, 239, 0.15);
       border: 1px solid ${colors.primary};
     `}
+
+  @media screen and (min-width: ${breakPoint.l}) {
+    ${LIGHT_1};
+  }
 `;
 
 const Wrapper = styled.section`
@@ -173,31 +173,35 @@ const TemplateInfoWrapper = styled.div`
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 12px;
+  padding-right: 4px;
 `;
 
 const TitleInput = styled.input`
-  ${MEDIUM_1};
+  ${MEDIUM_0};
   width: 454px;
   height: 29px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   color: ${colors.black};
   ::placeholder {
     color: ${colors.gray5};
   }
 `;
 
+const InfoWrapper = styled.div`
+  max-width: 360px;
+`;
+
 const InfoItemWrapper = styled.div`
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
   & + & {
     margin-top: 6px;
   }
 `;
 
 const MemoInput = styled.input`
-  ${MEDIUM_4};
+  ${REGULAR_7};
   width: 304px;
   padding: 4px 8px;
   border-radius: 2px;
@@ -211,14 +215,14 @@ const MemoInput = styled.input`
 const GroupButton = styled.button`
   ${REGULAR_7};
   background: ${colors.indigo4};
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 4px;
   color: ${colors.white};
 `;
 
 const TooltipButton = styled(TooltipIcon)`
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
 `;
 
