@@ -163,6 +163,12 @@ export const LIGHT_2 = css`
 `;
 
 export const LIGHT_3 = css`
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 140%;
+`;
+
+export const LIGHT_4 = css`
   font-size: 10px;
   font-weight: 300;
   line-height: 140%;

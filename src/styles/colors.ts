@@ -1,13 +1,13 @@
 export const colors = {
   primary: '#5274EF',
 
-  blue0: '#EDF2FF',
-  blue1: '#DBE4FF',
-  blue2: '#BAC8FF',
-  blue3: '#ADBDFC',
-  blue4: '#748FFC',
-  blue5: '#2850DD',
-  blue6: '#0B38DA',
+  indigo0: '#EDF2FF',
+  indigo1: '#DBE4FF',
+  indigo2: '#BAC8FF',
+  indigo3: '#ADBDFC',
+  indigo4: '#748FFC',
+  indigo5: '#2850DD',
+  indigo6: '#0B38DA',
 
   white: '#FFFFFF',
   black: '#111111',
@@ -32,7 +32,7 @@ export const colors = {
 
   system: {
     light: '#F5F8FF',
-    blue: '#5C7CFA',
+    indigo: '#5C7CFA',
     dark: '#030235',
   },
 };

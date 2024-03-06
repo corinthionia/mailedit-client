@@ -27,5 +27,6 @@
     }
   },
   "include": ["src", "vite.config.ts", "src/types/svg.d.ts"],
+  "exclude": ["src/scripts/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

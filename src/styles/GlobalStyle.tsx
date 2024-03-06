@@ -46,6 +46,15 @@ const reset = css`
   input,
   select {
     margin: 0;
+    border: none;
+  }
+
+  input:focus,
+  select:focus,
+  option:focus,
+  textarea:focus,
+  button:focus {
+    outline: none;
   }
 
   *,
@@ -70,10 +79,13 @@ const defaultStyle = css`
     src: url('/src/assets/fonts/Pretendard.woff2') format('woff2');
   }
 
+  * {
+    font-family: 'Pretendard', Arial, Helvetica, sans-serif;
+  }
+
   html,
   body {
     box-sizing: border-box;
-    font-family: 'Pretendard', Arial, Helvetica, sans-serif;
   }
 
   a {
