@@ -150,7 +150,7 @@ const Block = styled.div<{ isBlock: boolean }>`
     css`
       background: rgba(82, 116, 239, 0.15);
       border: 1px solid ${colors.primary};
-    `}
+    `};
 
   @media screen and (min-width: ${breakPoint.l}) {
     ${LIGHT_1};
