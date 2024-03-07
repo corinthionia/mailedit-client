@@ -5,13 +5,26 @@ import { LIGHT_1, LIGHT_3, REGULAR_7, SEMI_BOLD_3 } from '@/styles/typo';
 import Typo from '@/ui/typo/Typo';
 import { colors } from '@/styles/colors';
 import { breakPoint } from '@/styles/breakPoint';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '@/constants/routes';
 
 interface Props {}
 
 const Preview: React.FC<Props> = () => {
+  const navigate = useNavigate();
+
+  const goToHome = () => {
+    navigate(routes.home);
+  };
+
   return (
     <Wrapper>
-      <GoToHomeIcon width="24px" height="24px" />
+      <GoToHomeIcon
+        width="24px"
+        height="24px"
+        onClick={goToHome}
+        cursor="pointer"
+      />
       <Body>
         <TemplateInfo>
           <Typo type={SEMI_BOLD_3}>일정 공유</Typo>
@@ -86,7 +99,7 @@ const TemplateInfo = styled.div`
 const UseTemplateButton = styled.button`
   ${REGULAR_7};
   width: 72px;
-  padding: 6px 0;
+  padding: 4px 0;
   display: flex;
   align-items: center;
   justify-content: center;

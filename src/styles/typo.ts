@@ -157,13 +157,13 @@ export const LIGHT_1 = css`
 `;
 
 export const LIGHT_2 = css`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 300;
   line-height: 140%;
 `;
 
 export const LIGHT_3 = css`
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 300;
   line-height: 140%;
 `;

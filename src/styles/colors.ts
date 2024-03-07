@@ -30,8 +30,9 @@ export const colors = {
     purple: '#BE4BDB',
   },
 
-  system: {
+  bg: {
     light: '#F5F8FF',
+    gray: '#F4F7FC',
     indigo: '#5C7CFA',
     dark: '#030235',
   },

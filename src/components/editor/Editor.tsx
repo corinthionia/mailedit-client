@@ -161,7 +161,7 @@ const Wrapper = styled.section`
   grid-area: 'editor';
   width: 100%;
   height: 100vh;
-  padding: 48px 40px;
+  padding: 44px 40px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -226,7 +226,7 @@ const TooltipButton = styled(TooltipIcon)`
 `;
 
 const Edit = styled.div`
-  background: ${colors.system.light};
+  background: ${colors.bg.light};
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -243,6 +243,7 @@ const CopyButton = styled.span`
   color: ${colors.gray6};
   text-decoration: underline;
   margin-left: auto;
+  cursor: pointer;
 `;
 
 const Blocks = styled.div`
@@ -253,9 +254,9 @@ const Blocks = styled.div`
   border-top: 1px solid ${colors.gray3};
   padding: 18px 0;
   height: calc(100% - 32px);
+
   overflow: auto;
   padding-right: 10px;
-
   ::-webkit-scrollbar-thumb {
     background-color: ${colors.primary};
     border-radius: 15px;

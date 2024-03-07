@@ -23,7 +23,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 246px 1fr 1px 1fr;
+  grid-template-columns: 233px 1fr 1px 1fr;
   grid-template-areas: 'sidebar preview border editor';
 `;
 

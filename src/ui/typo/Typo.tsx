@@ -1,26 +1,30 @@
 import React, { ReactNode } from 'react';
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
-import { SerializedStyles } from '@emotion/react';
+import { SerializedStyles, css } from '@emotion/react';
 
 interface Props {
-  color?: string;
-  children: ReactNode;
   type: SerializedStyles;
+  color?: string;
+  pointer?: boolean;
+  children: ReactNode;
 }
 
 const Typo: React.FC<Props> = (props) => {
-  const { type, color = colors.black, children } = props;
+  const { type, color = colors.black, pointer, children } = props;
   return (
-    <Typography type={type} color={color}>
+    <Typography type={type} color={color} pointer={pointer}>
       {children}
     </Typography>
   );
 };
 
 const Typography = styled.p<Props>`
-  ${(props) => props.type};
-  color: ${(props) => props.color};
+  ${(props) => css`
+    ${props.type};
+    color: ${props.color};
+    cursor: ${props.pointer && 'pointer'};
+  `}
 `;
 
 export default Typo;
