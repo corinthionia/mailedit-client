@@ -11,7 +11,7 @@
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "deploy-storybook": "storybook-to-ghpages -d -o=storybook-static --ci"
+    "deploy-storybook": "storybook build && gh-pages -d storybook-static && rm -rf storybook-static"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -40,7 +40,6 @@
     "@storybook/blocks": "^7.6.17",
     "@storybook/react": "^7.6.17",
     "@storybook/react-vite": "^7.6.17",
-    "@storybook/storybook-deployer": "^2.8.16",
     "@storybook/test": "^7.6.17",
     "@svgr/cli": "^8.1.0",
     "@tanstack/react-query-devtools": "^5.24.1",
