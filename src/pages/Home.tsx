@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import Sidebar from '@/components/sidebar/Sidebar';
 import Typo from '@/ui/typo/Typo';
 import { LIGHT_2, LIGHT_3, REGULAR_6, SEMI_BOLD_4 } from '@/styles/typo';
 import { colors } from '@/styles/colors';
 import Thumbnail from '@/components/thumbnail/Thumbnail';
-import companyImage from '@/assets/imgs/home_base_template_company.png';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
+
+import companyImage from '@/assets/imgs/home_base_template_company.png';
+import Collapse from '@/assets/svgs/home_option_collapse.svg?react';
+import Expand from '@/assets/svgs/home_option_expand.svg?react';
+import ETC from '@/assets/svgs/home_etc.svg?react';
 
 interface Props {}
 
@@ -16,6 +20,12 @@ const Home: React.FC<Props> = () => {
 
   const goToWorkspace = () => {
     navigate(routes.workspace);
+  };
+
+  const [isOptionExpanded, setIsOptionExpanded] = useState<boolean>(false);
+
+  const handleOptionClick = () => {
+    setIsOptionExpanded(!isOptionExpanded);
   };
 
   return (
@@ -50,7 +60,7 @@ const Home: React.FC<Props> = () => {
 
           <Templates>
             <Thumbnail
-              title="안내문 등 제목이 들어가는위치다"
+              title="안내문 등 제목이 들어가는 위치다"
               memo="메모가 일단 표시된다 그리고 만약 사용자가 안 쓴 경우 첫 줄을 자동으로넣어준다는 메모가 일단 표시된다 그리고 만약 사용자가 안 쓴 경우 첫 줄을 자동으로넣어준다는"
               updatedAt="2022-01-12 15:24"
             />
@@ -67,7 +77,15 @@ const Home: React.FC<Props> = () => {
                   좀 더 높여 보세요.
                 </Typo>
               </BaseTemplateText>
-              <Option>회사</Option>
+              <Option onClick={handleOptionClick}>
+                <Typo type={LIGHT_3}>회사</Typo>
+
+                {isOptionExpanded ? (
+                  <Collapse width="10px" height="8px" />
+                ) : (
+                  <Expand width="10px" height="8px" />
+                )}
+              </Option>
             </BaseTemplateInfo>
 
             <BaseTemplates>
@@ -78,7 +96,9 @@ const Home: React.FC<Props> = () => {
                   <td>추가자료 요청</td>
                   <td>요청 자료 전달</td>
                   <td>문서제출</td>
-                  <td>...</td>
+                  <td>
+                    <ETC width="22px" height="4px" />
+                  </td>
                 </tr>
               </tbody>
             </BaseTemplates>
@@ -208,11 +228,10 @@ const BaseTemplateText = styled.div`
 `;
 
 const Option = styled.div`
-  ${LIGHT_3};
   width: 88px;
   height: 26px;
   border-radius: 3px;
-  padding: 0 8px 0 12px;
+  padding: 1px 8px 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;

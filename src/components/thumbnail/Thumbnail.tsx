@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import Typo from '@/ui/typo/Typo';
-import { LIGHT_4, MEDIUM_3, REGULAR_8 } from '@/styles/typo';
+import { LIGHT_3, MEDIUM_3, REGULAR_8 } from '@/styles/typo';
 import { colors } from '@/styles/colors';
 import BinIcon from '@/assets/svgs/home_bin.svg?react';
 import StarEmptyIcon from '@/assets/svgs/home_star_empty.svg?react';
@@ -35,7 +35,7 @@ const Thumbnail: React.FC<Props> = (props) => {
         </Title>
         <ItemWrapper>
           <Memo>
-            <Typo type={LIGHT_4} color={colors.gray7}>
+            <Typo type={LIGHT_3} color={colors.gray7}>
               {memo}
             </Typo>
           </Memo>
