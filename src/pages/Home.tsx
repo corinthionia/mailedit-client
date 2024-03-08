@@ -12,6 +12,7 @@ import companyImage from '@/assets/imgs/home_base_template_company.png';
 import Collapse from '@/assets/svgs/home_option_collapse.svg?react';
 import Expand from '@/assets/svgs/home_option_expand.svg?react';
 import ETC from '@/assets/svgs/home_etc.svg?react';
+import BaseTemplate from '@/components/baseTemplate/BaseTemplate';
 
 interface Props {}
 
@@ -23,10 +24,22 @@ const Home: React.FC<Props> = () => {
   };
 
   const [isOptionExpanded, setIsOptionExpanded] = useState<boolean>(false);
+  const [isBaseTemplateModalOpened, setIsBaseTemplateModalOpened] =
+    useState<boolean>(false);
 
   const handleOptionClick = () => {
     setIsOptionExpanded(!isOptionExpanded);
   };
+
+  const handleETCButtonClick = () => {
+    setIsBaseTemplateModalOpened(!isBaseTemplateModalOpened);
+  };
+
+  if (isBaseTemplateModalOpened) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
 
   return (
     <Wrapper>
@@ -96,7 +109,7 @@ const Home: React.FC<Props> = () => {
                   <td>추가자료 요청</td>
                   <td>요청 자료 전달</td>
                   <td>문서제출</td>
-                  <td>
+                  <td onClick={handleETCButtonClick}>
                     <ETC width="22px" height="4px" />
                   </td>
                 </tr>
@@ -106,6 +119,10 @@ const Home: React.FC<Props> = () => {
 
           <img src={companyImage} alt="company" width="232px" height="154px" />
         </Bottom>
+
+        {isBaseTemplateModalOpened && (
+          <BaseTemplate onClick={handleETCButtonClick} />
+        )}
       </Main>
     </Wrapper>
   );

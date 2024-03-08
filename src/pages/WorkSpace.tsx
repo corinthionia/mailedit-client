@@ -13,7 +13,12 @@ const WorkSpace: React.FC<Props> = () => {
     <Wrapper>
       <Sidebar />
       <Preview />
-      <Border height="100vh" direction="column" color={colors.gray4} />
+      <Border
+        width="1px"
+        height="100vh"
+        direction="column"
+        color={colors.gray4}
+      />
       <Editor />
     </Wrapper>
   );

@@ -181,6 +181,12 @@ export const EXTRA_LIGHT_0 = css`
 `;
 
 export const EXTRA_LIGHT_1 = css`
+  font-size: 13px;
+  font-weight: 200;
+  line-height: 140%;
+`;
+
+export const EXTRA_LIGHT_2 = css`
   font-size: 12px;
   font-weight: 200;
   line-height: 140%;

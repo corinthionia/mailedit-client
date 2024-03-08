@@ -3,13 +3,13 @@ import React from 'react';
 
 interface Props {
   width?: string;
-  height: string;
+  height?: string;
   direction?: 'row' | 'column';
   color: string;
 }
 
 const Border: React.FC<Props> = (props) => {
-  const { width = '1px', height, direction = 'row', color } = props;
+  const { width = '100%', height = '1px', direction = 'row', color } = props;
 
   return (
     <Wrapper
