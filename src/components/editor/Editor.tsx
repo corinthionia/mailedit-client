@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useRef, useState } from 'react';
+import React, { KeyboardEvent, useRef } from 'react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { colors } from '@/styles/colors';
@@ -17,7 +17,7 @@ import { breakPoint } from '@/styles/breakPoint';
 interface Props {}
 
 const Editor: React.FC<Props> = () => {
-  const [blocks, setBlocks] = useState([
+  const blocks = [
     {
       id: 'a',
       isBlock: true,
@@ -36,18 +36,13 @@ const Editor: React.FC<Props> = () => {
       content:
         'OO 프로젝트와 관련해서 OO팀이 주최하는 회의를 진행하고자 합니다.\n이번 회의일정은 다음과 같습니다.',
     },
-  ]);
+  ];
 
   const blocksRef = useRef<HTMLDivElement>(null);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-
-      setBlocks((prev) => [
-        ...prev,
-        { id: `${Date.now()}`, content: ' ', isBlock: false },
-      ]);
     }
   }
 
@@ -103,9 +98,7 @@ const Editor: React.FC<Props> = () => {
                 isBlock={block.isBlock}
                 onKeyDown={handleKeyDown}
               >
-                {block.content.split('\n').map((line) => (
-                  <div>{line}</div>
-                ))}
+                {block.content}
               </Block>
             </BlockWrapper>
           ))}

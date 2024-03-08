@@ -1,6 +1,7 @@
 import Editor from '@/components/editor/Editor';
 import Preview from '@/components/preview/Preview';
 import Sidebar from '@/components/sidebar/Sidebar';
+import { breakPoint } from '@/styles/breakPoint';
 import { colors } from '@/styles/colors';
 import Border from '@/ui/border/Border';
 import styled from '@emotion/styled';
@@ -26,6 +27,7 @@ const WorkSpace: React.FC<Props> = () => {
 
 const Wrapper = styled.div`
   width: 100%;
+  min-width: ${breakPoint.m};
   height: 100%;
   display: grid;
   grid-template-columns: 233px 1fr 1px 1fr;
