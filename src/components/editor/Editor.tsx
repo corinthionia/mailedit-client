@@ -1,11 +1,11 @@
-import React, { KeyboardEvent, useRef } from 'react';
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { colors } from '@/styles/colors';
 import Typo from '@/ui/typo/Typo';
 import {
   LIGHT_1,
-  LIGHT_3,
+  LIGHT_2,
   MEDIUM_0,
   REGULAR_6,
   REGULAR_7,
@@ -13,11 +13,13 @@ import {
 import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
 import TooltipIcon from '@/assets/svgs/workspace_editor_tooltip.svg?react';
 import { breakPoint } from '@/styles/breakPoint';
+import { copyTextToClipBoard } from '@/utils/copyText';
+import type { Command } from '@/types/command';
 
 interface Props {}
 
 const Editor: React.FC<Props> = () => {
-  const blocks = [
+  const [blocks, setBlocks] = useState([
     {
       id: 'a',
       isBlock: true,
@@ -26,36 +28,275 @@ const Editor: React.FC<Props> = () => {
     },
     {
       id: 'b',
-      isBlock: false,
+      isBlock: true,
       content:
-        '1. 일시: OOOO년 OO월 OO일 오전/오후 OO시 ~ OO시\n2. 장소: (장소)\n3. 안건: (안건)\n4. 참석 대상: (참석 대상)\n5. 사전 준비사항: (사전 준비사항)\n',
+        '1. 일시: OOOO년 OO월 OO일 오전/오후 OO시 ~ OO시\n2. 장소: (장소)\n3. 안건: (안건)\n4. 참석 대상: (참석 대상)\n5. 사전 준비사항: (사전 준비사항)',
     },
     {
       id: 'c',
-      isBlock: true,
+      isBlock: false,
       content:
-        'OO 프로젝트와 관련해서 OO팀이 주최하는 회의를 진행하고자 합니다.\n이번 회의일정은 다음과 같습니다.',
+        '부득이하게 본 회의에 참석이 어려우신 경우, 원활한 회의 진행을 위해 OO월 OO일 오전/오후 OO시까지 회신 부탁드립니다.',
     },
-  ];
+    {
+      id: 'd',
+      isBlock: true,
+      content: '감사합니다.',
+    },
+    {
+      id: 'last',
+      isBlock: false,
+      content: '',
+    },
+  ]);
 
+  const selection = window.getSelection();
   const blocksRef = useRef<HTMLDivElement>(null);
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
+  const [command, setCommand] = useState<Command>(null);
+  const [caretPosition, setCaretPosition] = useState({
+    blockIndex: -1,
+    lineIndex: -1,
+    characterIndex: 0,
+  });
+
+  const getNodeByIndex = (blockIndex: number, lineIndex: number) => {
+    if (!blocksRef.current) return;
+
+    return blocksRef.current.children[blockIndex].children[1].childNodes[
+      lineIndex
+    ];
+  };
+
+  const updateBlockContents = () => {
+    if (!blocksRef.current) return;
+
+    const updatedBlocks = Array.from(blocksRef.current.childNodes).map(
+      (block, index) => {
+        const lines = Array.from(block.childNodes[1].childNodes);
+        const isBlock =
+          blocksRef.current?.children[index].children[1].getAttribute(
+            'data-is-block'
+          );
+
+        return {
+          id: `${Date.now().toString()} ${index}`,
+          isBlock: isBlock === 'true',
+          content: lines.map((line) => line.textContent).join('\n'),
+        };
+      }
+    );
+
+    return updatedBlocks;
+  };
+
+  // Move caret to clicked position
+  // TODO: 빈 블록인 경우 이벤트 동작하지 않음
+  const handleClick = (blockIndex: number, lineIndex: number) => {
+    setCaretPosition({
+      blockIndex,
+      lineIndex,
+      characterIndex: selection?.focusOffset ?? 0,
+    });
+  };
+
+  // Delete a Block with backspace key
+  const deleteBlock = (blockIndex: number) => {
+    if (!blocksRef.current) return;
+
+    const updatedBlocks = updateBlockContents();
+    if (!updatedBlocks) return;
+
+    setBlocks([
+      ...updatedBlocks.slice(0, blockIndex - 1),
+      {
+        ...updatedBlocks[blockIndex - 1],
+        content:
+          updatedBlocks[blockIndex - 1].content +
+          updatedBlocks[blockIndex].content,
+      },
+      ...updatedBlocks.slice(blockIndex + 1),
+    ]);
+  };
+
+  // Add a new line in the same block
+  const addNewLine = (blockIndex: number, lineIndex: number) => {
+    if (!blocksRef.current) return;
+
+    const updatedBlocks = updateBlockContents();
+    if (!updatedBlocks) return;
+
+    const lines = updatedBlocks[blockIndex].content.split('\n');
+
+    setBlocks([
+      ...updatedBlocks.slice(0, blockIndex === 0 ? 0 : blockIndex),
+      {
+        id: `${Date.now()}`,
+        isBlock: updatedBlocks[blockIndex].isBlock,
+        content: [
+          ...lines.slice(0, lineIndex),
+          lines[lineIndex].slice(0, selection?.focusOffset),
+          lines[lineIndex].slice(selection?.focusOffset),
+          ...lines.slice(lineIndex + 1),
+        ].join('\n'),
+      },
+      ...updatedBlocks.slice(blockIndex + 1),
+    ]);
+  };
+
+  // Add a new block
+  const addNewBlock = (blockIndex: number, lineIndex: number) => {
+    if (lineIndex === -1) {
+      return;
     }
-  }
 
-  const text = Array.from(blocksRef.current?.childNodes ?? [])
-    .map((child) => child.textContent)
-    .join('\n');
+    if (!blocksRef.current) return;
 
-  const handleCopyToClipBoard = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert('클립보드에 복사되었습니다.');
-    } catch {
-      alert('링크 복사에 실패했습니다.\n다시 시도해 주세요.');
+    const updatedBlocks = updateBlockContents();
+    if (!updatedBlocks) return;
+
+    const lines = updatedBlocks[blockIndex].content.split('\n');
+
+    setBlocks([
+      ...updatedBlocks.slice(0, blockIndex ? blockIndex : 0),
+      {
+        id: `${Date.now()}`,
+        isBlock: false,
+        content:
+          [
+            ...lines.slice(0, lineIndex),
+            lines[lineIndex].slice(0, selection?.getRangeAt(0).endOffset ?? 0),
+          ]
+            .join('\n')
+            .trim() ?? '',
+      },
+      {
+        id: `${Number(Date.now()) + 1}`,
+        isBlock: false,
+        content:
+          [
+            updatedBlocks[blockIndex].content
+              .split('\n')
+              // eslint-disable-next-line no-unexpected-multiline
+              [lineIndex].slice(selection?.getRangeAt(0).endOffset ?? 0 + 1),
+            ...updatedBlocks[blockIndex].content
+              .split('\n')
+              .slice(lineIndex + 1),
+          ]
+            .join('\n')
+            .trim() ?? '',
+      },
+      ...updatedBlocks.slice(blockIndex + 1),
+    ]);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    // 현재 블록 삭제
+    if (
+      e.key === 'Backspace' &&
+      caretPosition.blockIndex !== 0 &&
+      caretPosition.lineIndex === 0 &&
+      caretPosition.characterIndex === 0 &&
+      selection?.focusOffset === 0
+    ) {
+      e.preventDefault();
+      deleteBlock(caretPosition.blockIndex);
+      setCommand(e.key);
+    }
+
+    // 현재 블록 내에서 줄 바꿈
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      addNewLine(caretPosition.blockIndex, caretPosition.lineIndex);
+      setCommand('ShiftEnter');
+    }
+
+    // 새로운 블록 추가
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      addNewBlock(caretPosition.blockIndex, caretPosition.lineIndex);
+      setCommand('Enter');
+    }
+  };
+
+  useEffect(() => {
+    const { blockIndex, lineIndex, characterIndex } = caretPosition;
+
+    if (blockIndex === -1 || lineIndex === -1) {
+      return;
+    }
+
+    if (command === 'Enter') {
+      setCaretPosition((prev) => ({
+        blockIndex: prev.blockIndex + 1,
+        lineIndex: 0,
+        characterIndex: 0,
+      }));
+
+      setCommand(null);
+      return;
+    }
+
+    if (command === 'ShiftEnter') {
+      setCaretPosition((prev) => ({
+        ...prev,
+        lineIndex: prev.lineIndex + 1,
+        characterIndex: 0,
+      }));
+
+      setCommand(null);
+      return;
+    }
+
+    if (command === 'Backspace' && lineIndex === 0 && characterIndex === 0) {
+      setCaretPosition((prev) => ({
+        blockIndex: prev.blockIndex - 1,
+        lineIndex: 0, // TODO 값 구하기
+        characterIndex:
+          getNodeByIndex(prev.blockIndex - 1, 0)?.textContent?.length ?? 0,
+      }));
+
+      setCommand(null);
+      return;
+    }
+  }, [blocks, caretPosition, command]);
+
+  useEffect(() => {
+    if (
+      selection &&
+      blocksRef.current &&
+      caretPosition.blockIndex !== -1 &&
+      caretPosition.lineIndex !== -1
+    ) {
+      const range = document.createRange();
+
+      const currentNode =
+        blocksRef.current.children[caretPosition.blockIndex].children[1]
+          .childNodes[caretPosition.lineIndex];
+
+      if (currentNode.childNodes.length) {
+        range.setStart(currentNode.childNodes[0], caretPosition.characterIndex);
+      } else {
+        range.setStart(currentNode, 0);
+      }
+
+      range.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }, [caretPosition]);
+
+  const handleCopyButton = async () => {
+    if (blocksRef.current) {
+      const text = Array.from(blocksRef.current.childNodes)
+        .map((block) =>
+          Array.from(block.childNodes[1].childNodes)
+            .map((line) => line.textContent)
+            .join('\n')
+        )
+        .join('\n\n');
+
+      await copyTextToClipBoard(text);
     }
   };
 
@@ -85,35 +326,34 @@ const Editor: React.FC<Props> = () => {
       </TemplateInfoWrapper>
 
       <Edit>
-        <CopyButton onClick={handleCopyToClipBoard}>복사하기</CopyButton>
+        <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
         <Blocks ref={blocksRef}>
-          {blocks.map((block) => (
+          {blocks.map((block, blockIndex) => (
             <BlockWrapper key={block.id}>
               <GrabButton>
                 <GrabIcon width="6px" height="12px" />
               </GrabButton>
               <Block
-                contentEditable
                 spellCheck
-                isBlock={block.isBlock}
+                contentEditable
                 onKeyDown={handleKeyDown}
+                isBlock={block.isBlock}
+                data-block-index={blockIndex}
+                data-is-block={block.isBlock}
+                suppressContentEditableWarning
               >
-                {block.content}
+                {block.content.split('\n').map((line, lineIndex) => (
+                  <div
+                    key={`${Date.now().toString()} ${line}`}
+                    data-line-index={lineIndex}
+                    onClick={() => handleClick(blockIndex, lineIndex)}
+                  >
+                    {line}
+                  </div>
+                ))}
               </Block>
             </BlockWrapper>
           ))}
-
-          <BlockWrapper>
-            <GrabButton>
-              <GrabIcon width="6px" height="12px" />
-            </GrabButton>
-            <Block
-              contentEditable
-              spellCheck
-              isBlock={false}
-              onKeyDown={handleKeyDown}
-            ></Block>
-          </BlockWrapper>
         </Blocks>
       </Edit>
 
@@ -123,19 +363,21 @@ const Editor: React.FC<Props> = () => {
 };
 
 const Block = styled.div<{ isBlock: boolean }>`
-  ${LIGHT_3};
+  ${LIGHT_2};
   width: calc(100% - 28px);
+  min-height: 30px;
   padding: 4px 12px;
   letter-spacing: -0.5%;
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 150%;
+  line-height: 170%;
   background: none;
   border-radius: 2px;
   border: 1px solid transparent;
 
   &:focus {
     outline: none;
+    border: 1px solid ${colors.primary};
   }
 
   ${(props) =>
@@ -145,8 +387,15 @@ const Block = styled.div<{ isBlock: boolean }>`
       border: 1px solid ${colors.primary};
     `};
 
-  @media screen and (min-width: ${breakPoint.l}) {
+  div {
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+  }
+
+  @media screen and (min-width: ${breakPoint.xl}) {
     ${LIGHT_1};
+    line-height: 200%;
   }
 `;
 

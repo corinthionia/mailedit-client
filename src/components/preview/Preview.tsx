@@ -1,7 +1,13 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import GoToHomeIcon from '@/assets/svgs/workspace_preview_go_to_home.svg?react';
-import { LIGHT_1, LIGHT_3, REGULAR_7, SEMI_BOLD_3 } from '@/styles/typo';
+import {
+  LIGHT_1,
+  LIGHT_2,
+  LIGHT_3,
+  REGULAR_7,
+  SEMI_BOLD_3,
+} from '@/styles/typo';
 import Typo from '@/ui/typo/Typo';
 import { colors } from '@/styles/colors';
 import { breakPoint } from '@/styles/breakPoint';
@@ -123,7 +129,7 @@ const Blocks = styled.div`
 `;
 
 const Block = styled.div`
-  ${LIGHT_3};
+  ${LIGHT_2};
   width: calc(100% - 20px);
   padding: 4px 12px;
   letter-spacing: -0.5%;
@@ -136,7 +142,7 @@ const Block = styled.div`
   background: rgba(82, 116, 239, 0.15);
   border: 1px solid ${colors.primary};
   cursor: pointer;
-  @media screen and (min-width: ${breakPoint.l}) {
+  @media screen and (min-width: ${breakPoint.xl}) {
     ${LIGHT_1};
   }
 `;

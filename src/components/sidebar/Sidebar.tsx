@@ -14,7 +14,6 @@ interface Props {}
 
 const Sidebar: React.FC<Props> = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  console.log(scrollRef.current);
 
   return (
     <Wrapper>

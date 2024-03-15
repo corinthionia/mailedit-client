@@ -1,27 +1,27 @@
-name: Build and Deploy storybook to GitHub Pages
+# name: Build and Deploy storybook to GitHub Pages
 
-on:
-  push:
-    paths: ['stories/**', 'src/components/**']
+# on:
+#   push:
+#     paths: ['src/components/**']
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout 🛎️
+#         uses: actions/checkout@v3
 
-      - name: Set up Node.js ✅
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.11.1
+#       - name: Set up Node.js ✅
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 20.11.1
 
-      - name: Setup pnpm ⛏️
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
+#       - name: Setup pnpm ⛏️
+#         uses: pnpm/action-setup@v3
+#         with:
+#           version: 8
 
-      - name: Install and Deploy 🚀
-        run: |
-          pnpm install
-          pnpm deploy-storybook
+#       - name: Install and Deploy 🚀
+#         run: |
+#           pnpm install
+#           pnpm deploy-storybook
