@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
 import Typo from '@/ui/typo/Typo';
@@ -10,18 +10,31 @@ import {
   REGULAR_6,
 } from '@/styles/typo';
 import Border from '@/ui/border/Border';
+import { BaseTemplate } from '@/types/template';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '@/constants/routes';
 
 interface Props {
   onClick: () => void;
+  businessTemplates: BaseTemplate[];
+  schoolTemplates: BaseTemplate[];
 }
 
 const BaseTemplate: React.FC<Props> = (props) => {
-  const { onClick } = props;
+  const { onClick, businessTemplates, schoolTemplates } = props;
+  const navigate = useNavigate();
 
-  const dummy = [
-    '안녕하세요, 0000년 상반기/하반기 00사에 인턴 지원을 하게 된 000입니다.',
-    '저는 현재 00대학교 00학과(복전생이라면 00학과 주전공, 00학과 복수전공) 재학 중이며,\n상반기/하반기 인턴 지원을 위해 하단에 이력서 및 자기소개서를 첨부한 이메일을 보내게 되었습니다.',
-  ];
+  const [selectedTemplate, setSelectedTemplate] = useState<BaseTemplate>(
+    businessTemplates[0]
+  );
+
+  const handleTemplateTitleClick = (template: BaseTemplate) => {
+    setSelectedTemplate(template);
+  };
+
+  const goToWorkspace = () => {
+    navigate(`${routes.workspace}?id=${selectedTemplate.id}`);
+  };
 
   return (
     <>
@@ -29,23 +42,22 @@ const BaseTemplate: React.FC<Props> = (props) => {
       <Wrapper>
         <Preview>
           <Head>
-            <Typo type={MEDIUM_2}>회의 일정 공지</Typo>
-            <Typo type={REGULAR_6}>[00팀] 00/00 00프로젝트 회의 일정 공유</Typo>
+            <Typo type={MEDIUM_2}>{selectedTemplate.title}</Typo>
+            <Typo type={REGULAR_6}>{selectedTemplate.description}</Typo>
           </Head>
           <Border color={colors.gray3} />
           <Body>
-            {dummy.map((block) => (
-              <Block>
-                {block.split('\n').map((b) => (
-                  <div>{b}</div>
+            {selectedTemplate.contents.map((block) => (
+              <Block key={block.id}>
+                {block.text.split('\n').map((line) => (
+                  <div key={line}>{line}</div>
                 ))}
               </Block>
             ))}
           </Body>
           <Description>
             <Typo type={LIGHT_2} color={colors.primary}>
-              회의일정은 회사 내에서 회의 내용에 대한 공지를 드릴 때에
-              사용됩니다.
+              {selectedTemplate.description}
             </Typo>
           </Description>
         </Preview>
@@ -57,18 +69,40 @@ const BaseTemplate: React.FC<Props> = (props) => {
                 회사
               </Typo>
               <Border color={colors.white} />
-
               <TemplateList>
-                <Typo type={EXTRA_LIGHT_2} color={colors.white}>
-                  회의일정 공지
-                </Typo>
-                <Typo type={EXTRA_LIGHT_2} color={colors.white}>
-                  회의일정 조율
-                </Typo>
+                {businessTemplates.map((template) => (
+                  <Typo
+                    key={template.id}
+                    type={EXTRA_LIGHT_2}
+                    color={colors.white}
+                    onClick={() => handleTemplateTitleClick(template)}
+                  >
+                    {template.title}
+                  </Typo>
+                ))}
+              </TemplateList>
+            </TemplateInfo>
+
+            <TemplateInfo>
+              <Typo type={REGULAR_6} color={colors.white}>
+                학교
+              </Typo>
+              <Border color={colors.white} />
+              <TemplateList>
+                {schoolTemplates.map((template) => (
+                  <Typo
+                    key={template.id}
+                    type={EXTRA_LIGHT_2}
+                    color={colors.white}
+                    onClick={() => handleTemplateTitleClick(template)}
+                  >
+                    {template.title}
+                  </Typo>
+                ))}
               </TemplateList>
             </TemplateInfo>
           </TemplateListWrapper>
-          <GoToWorkspaceButton>
+          <GoToWorkspaceButton onClick={goToWorkspace}>
             <Typo type={MEDIUM_5} color={colors.primary}>
               템플릿 사용하기
             </Typo>
@@ -115,7 +149,7 @@ const Preview = styled.section`
   padding: 36px 44px;
 `;
 
-const Head = styled.head`
+const Head = styled.section`
   display: flex;
   flex-direction: column;
   gap: 20px;

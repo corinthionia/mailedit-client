@@ -8,7 +8,7 @@ import ExpandIcon from '@/assets/svgs/workspace_sidebar_expand.svg?react';
 import CollapseIcon from '@/assets/svgs/workspace_sidebar_collapse.svg?react';
 
 interface Props {
-  tag: ReactNode;
+  tag?: ReactNode;
   title: string;
   list: {
     id: string;
@@ -42,7 +42,7 @@ const Accordion: React.FC<Props> = (props) => {
     <Wrapper>
       <Group onClick={handleClickAccordion}>
         <GroupInfo>
-          <IconWrapper>{tag}</IconWrapper>
+          {tag && <IconWrapper>{tag}</IconWrapper>}
           <Typo type={LIGHT_2} color={colors.white}>
             {title}
           </Typo>

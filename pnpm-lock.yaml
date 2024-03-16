@@ -17,9 +17,6 @@ dependencies:
   '@supabase/auth-ui-shared':
     specifier: ^0.1.8
     version: 0.1.8(@supabase/supabase-js@2.39.7)
-  '@supabase/gotrue-js':
-    specifier: ^2.62.2
-    version: 2.62.2
   '@supabase/supabase-js':
     specifier: ^2.39.7
     version: 2.39.7

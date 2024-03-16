@@ -24,7 +24,6 @@
     "@emotion/styled": "^11.11.0",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/gotrue-js": "^2.62.2",
     "@supabase/supabase-js": "^2.39.7",
     "@tanstack/react-query": "^5.24.8",
     "@types/node": "^20.11.20",

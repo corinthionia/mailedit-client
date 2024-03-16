@@ -13,6 +13,9 @@ import Collapse from '@/assets/svgs/home_option_collapse.svg?react';
 import Expand from '@/assets/svgs/home_option_expand.svg?react';
 import ETC from '@/assets/svgs/home_etc.svg?react';
 import BaseTemplate from '@/components/baseTemplate/BaseTemplate';
+import { getFilteredBaseTemplatesByCategory } from '@/apis/template';
+import { useQuery } from '@tanstack/react-query';
+import { BaseTemplate as BaseTemplateType } from '@/types/template';
 
 interface Props {}
 
@@ -40,6 +43,16 @@ const Home: React.FC<Props> = () => {
   } else {
     document.body.style.overflow = 'auto';
   }
+
+  const getBusinessBaseTemplateQuery = useQuery({
+    queryKey: [],
+    queryFn: () => getFilteredBaseTemplatesByCategory('business'),
+  });
+
+  const getSchoolBaseTemplateQuery = useQuery({
+    queryKey: [],
+    queryFn: () => getFilteredBaseTemplatesByCategory('school'),
+  });
 
   return (
     <Wrapper>
@@ -121,7 +134,15 @@ const Home: React.FC<Props> = () => {
         </Bottom>
 
         {isBaseTemplateModalOpened && (
-          <BaseTemplate onClick={handleETCButtonClick} />
+          <BaseTemplate
+            onClick={handleETCButtonClick}
+            businessTemplates={
+              getBusinessBaseTemplateQuery.data as BaseTemplateType[]
+            }
+            schoolTemplates={
+              getSchoolBaseTemplateQuery.data as BaseTemplateType[]
+            }
+          />
         )}
       </Main>
     </Wrapper>

@@ -8,12 +8,13 @@ interface Props {
   color?: string;
   pointer?: boolean;
   children: ReactNode;
+  onClick?: () => void;
 }
 
 const Typo: React.FC<Props> = (props) => {
-  const { type, color = colors.black, pointer, children } = props;
+  const { type, color = colors.black, pointer, onClick, children } = props;
   return (
-    <Typography type={type} color={color} pointer={pointer}>
+    <Typography type={type} color={color} pointer={pointer} onClick={onClick}>
       {children}
     </Typography>
   );
