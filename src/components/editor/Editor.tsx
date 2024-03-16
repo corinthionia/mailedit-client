@@ -1,4 +1,11 @@
-import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import React, {
+  Dispatch,
+  KeyboardEvent,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { colors } from '@/styles/colors';
@@ -15,40 +22,15 @@ import TooltipIcon from '@/assets/svgs/workspace_editor_tooltip.svg?react';
 import { breakPoint } from '@/styles/breakPoint';
 import { copyTextToClipBoard } from '@/utils/copyText';
 import type { Command } from '@/types/command';
+import { BaseTemplateContents } from '@/types/template';
 
-interface Props {}
+interface Props {
+  blocks: BaseTemplateContents[];
+  setBlocks: Dispatch<SetStateAction<BaseTemplateContents[]>>;
+}
 
-const Editor: React.FC<Props> = () => {
-  const [blocks, setBlocks] = useState([
-    {
-      id: 'a',
-      isBlock: true,
-      content:
-        'OO 프로젝트와 관련해서 OO팀이 주최하는 회의를 진행하고자 합니다.\n이번 회의일정은 다음과 같습니다.',
-    },
-    {
-      id: 'b',
-      isBlock: true,
-      content:
-        '1. 일시: OOOO년 OO월 OO일 오전/오후 OO시 ~ OO시\n2. 장소: (장소)\n3. 안건: (안건)\n4. 참석 대상: (참석 대상)\n5. 사전 준비사항: (사전 준비사항)',
-    },
-    {
-      id: 'c',
-      isBlock: false,
-      content:
-        '부득이하게 본 회의에 참석이 어려우신 경우, 원활한 회의 진행을 위해 OO월 OO일 오전/오후 OO시까지 회신 부탁드립니다.',
-    },
-    {
-      id: 'd',
-      isBlock: true,
-      content: '감사합니다.',
-    },
-    {
-      id: 'last',
-      isBlock: false,
-      content: '',
-    },
-  ]);
+const Editor = (props: Props) => {
+  const { blocks, setBlocks } = props;
 
   const selection = window.getSelection();
   const blocksRef = useRef<HTMLDivElement>(null);
@@ -82,7 +64,7 @@ const Editor: React.FC<Props> = () => {
         return {
           id: `${Date.now().toString()} ${index}`,
           isBlock: isBlock === 'true',
-          content: lines.map((line) => line.textContent).join('\n'),
+          text: lines.map((line) => line.textContent).join('\n'),
         };
       }
     );
@@ -112,9 +94,8 @@ const Editor: React.FC<Props> = () => {
       ...updatedBlocks.slice(0, blockIndex - 1),
       {
         ...updatedBlocks[blockIndex - 1],
-        content:
-          updatedBlocks[blockIndex - 1].content +
-          updatedBlocks[blockIndex].content,
+        text:
+          updatedBlocks[blockIndex - 1].text + updatedBlocks[blockIndex].text,
       },
       ...updatedBlocks.slice(blockIndex + 1),
     ]);
@@ -127,14 +108,14 @@ const Editor: React.FC<Props> = () => {
     const updatedBlocks = updateBlockContents();
     if (!updatedBlocks) return;
 
-    const lines = updatedBlocks[blockIndex].content.split('\n');
+    const lines = updatedBlocks[blockIndex].text.split('\n');
 
     setBlocks([
       ...updatedBlocks.slice(0, blockIndex === 0 ? 0 : blockIndex),
       {
         id: `${Date.now()}`,
         isBlock: updatedBlocks[blockIndex].isBlock,
-        content: [
+        text: [
           ...lines.slice(0, lineIndex),
           lines[lineIndex].slice(0, selection?.focusOffset),
           lines[lineIndex].slice(selection?.focusOffset),
@@ -156,14 +137,14 @@ const Editor: React.FC<Props> = () => {
     const updatedBlocks = updateBlockContents();
     if (!updatedBlocks) return;
 
-    const lines = updatedBlocks[blockIndex].content.split('\n');
+    const lines = updatedBlocks[blockIndex].text.split('\n');
 
     setBlocks([
       ...updatedBlocks.slice(0, blockIndex ? blockIndex : 0),
       {
         id: `${Date.now()}`,
         isBlock: false,
-        content:
+        text:
           [
             ...lines.slice(0, lineIndex),
             lines[lineIndex].slice(0, selection?.getRangeAt(0).endOffset ?? 0),
@@ -174,15 +155,13 @@ const Editor: React.FC<Props> = () => {
       {
         id: `${Number(Date.now()) + 1}`,
         isBlock: false,
-        content:
+        text:
           [
-            updatedBlocks[blockIndex].content
+            updatedBlocks[blockIndex].text
               .split('\n')
               // eslint-disable-next-line no-unexpected-multiline
               [lineIndex].slice(selection?.getRangeAt(0).endOffset ?? 0 + 1),
-            ...updatedBlocks[blockIndex].content
-              .split('\n')
-              .slice(lineIndex + 1),
+            ...updatedBlocks[blockIndex].text.split('\n').slice(lineIndex + 1),
           ]
             .join('\n')
             .trim() ?? '',
@@ -345,7 +324,7 @@ const Editor: React.FC<Props> = () => {
                 data-is-block={block.isBlock}
                 suppressContentEditableWarning
               >
-                {block.content.split('\n').map((line, lineIndex) => (
+                {block.text.split('\n').map((line, lineIndex) => (
                   <div
                     key={`${Date.now().toString()} ${line}`}
                     data-line-index={lineIndex}
@@ -406,7 +385,7 @@ const Wrapper = styled.section`
   grid-area: 'editor';
   width: 100%;
   height: 100vh;
-  padding: 44px 40px;
+  padding: 36px 40px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -424,7 +403,7 @@ const TitleInput = styled.input`
   ${MEDIUM_0};
   width: 454px;
   height: 29px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   color: ${colors.black};
   ::placeholder {
     color: ${colors.gray5};

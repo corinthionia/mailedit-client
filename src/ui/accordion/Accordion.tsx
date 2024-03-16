@@ -6,14 +6,14 @@ import { EXTRA_LIGHT_1, LIGHT_2 } from '@/styles/typo';
 
 import ExpandIcon from '@/assets/svgs/workspace_sidebar_expand.svg?react';
 import CollapseIcon from '@/assets/svgs/workspace_sidebar_collapse.svg?react';
+import { BaseTemplate } from '@/types/template';
+import { useSetRecoilState } from 'recoil';
+import { SelectedTemplateAtom } from '@/recoils/selectedTemplate';
 
 interface Props {
   tag?: ReactNode;
   title: string;
-  list: {
-    id: string;
-    title: string;
-  }[];
+  list: BaseTemplate[];
 }
 
 const Accordion: React.FC<Props> = (props) => {
@@ -23,6 +23,7 @@ const Accordion: React.FC<Props> = (props) => {
   const childRef = useRef<HTMLDivElement>(null);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const setSelectedTemplate = useSetRecoilState(SelectedTemplateAtom);
 
   const handleClickAccordion = () => {
     if (parentRef.current === null || childRef.current === null) {
@@ -38,6 +39,10 @@ const Accordion: React.FC<Props> = (props) => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const handleBaseTemplateTitleClick = (template: BaseTemplate) => {
+    setSelectedTemplate(template);
+  };
+
   return (
     <Wrapper>
       <Group onClick={handleClickAccordion}>
@@ -47,7 +52,7 @@ const Accordion: React.FC<Props> = (props) => {
             {title}
           </Typo>
         </GroupInfo>
-        {list.length &&
+        {!!list.length &&
           (isCollapsed ? (
             <CollapseIcon width="14px" height="10px" />
           ) : (
@@ -57,9 +62,14 @@ const Accordion: React.FC<Props> = (props) => {
 
       <ListWrapper ref={parentRef}>
         <ListItem ref={childRef}>
-          {list.map(({ id, title }) => (
-            <Typo key={id} type={EXTRA_LIGHT_1} color={colors.white}>
-              {title}
+          {list.map((template) => (
+            <Typo
+              key={template.id}
+              type={EXTRA_LIGHT_1}
+              color={colors.white}
+              onClick={() => handleBaseTemplateTitleClick(template)}
+            >
+              {template.title}
             </Typo>
           ))}
         </ListItem>

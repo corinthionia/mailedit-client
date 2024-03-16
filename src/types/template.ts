@@ -2,7 +2,7 @@ export interface BaseTemplate {
   id: string;
   title: string;
   description?: string;
-  category: 'school' | 'business';
+  category: BaseTemplateCategory;
   contents: BaseTemplateContents[];
   createdAt: string;
   updatedAt: string;
@@ -13,3 +13,5 @@ export interface BaseTemplateContents {
   isBlock: boolean;
   text: string;
 }
+
+export type BaseTemplateCategory = 'school' | 'business';

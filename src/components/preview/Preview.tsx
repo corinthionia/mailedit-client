@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import styled from '@emotion/styled';
 import GoToHomeIcon from '@/assets/svgs/workspace_preview_go_to_home.svg?react';
 import {
@@ -13,11 +13,25 @@ import { colors } from '@/styles/colors';
 import { breakPoint } from '@/styles/breakPoint';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
+import { BaseTemplate, BaseTemplateContents } from '@/types/template';
 
-interface Props {}
+import noTemplateImg from '@/assets/imgs/workspace_preview_no_template.png';
 
-const Preview: React.FC<Props> = () => {
+interface Props {
+  template: BaseTemplate | null;
+  setBlocks: Dispatch<SetStateAction<BaseTemplateContents[]>>;
+}
+
+const Preview: React.FC<Props> = (props: Props) => {
+  const { template, setBlocks } = props;
+
   const navigate = useNavigate();
+
+  const handleUseTemplateButtonClick = () => {
+    if (!template) return;
+
+    setBlocks((prev) => [...prev, ...template.contents]);
+  };
 
   const goToHome = () => {
     navigate(routes.home);
@@ -32,38 +46,36 @@ const Preview: React.FC<Props> = () => {
         cursor="pointer"
       />
       <Body>
-        <TemplateInfo>
-          <Typo type={SEMI_BOLD_3}>일정 공유</Typo>
-        </TemplateInfo>
-        <ItemWrapper>
-          <TemplateInfo>
-            <Typo type={LIGHT_3}>
-              제목: [OO팀] OO/OO 프로젝트 회의 일정 공유
-            </Typo>
-          </TemplateInfo>
-          <UseTemplateButton>템플릿 쓰기</UseTemplateButton>
-        </ItemWrapper>
+        {template ? (
+          <>
+            <TemplateInfo>
+              <Typo type={SEMI_BOLD_3}>{template.title}</Typo>
+            </TemplateInfo>
+            <ItemWrapper>
+              <TemplateInfo>
+                <Typo type={LIGHT_3}>{template.description}</Typo>
+              </TemplateInfo>
+              <UseTemplateButton onClick={handleUseTemplateButtonClick}>
+                템플릿 쓰기
+              </UseTemplateButton>
+            </ItemWrapper>
 
-        <Blocks>
-          <Block>OOO님 안녕하세요, 저는 OO팀 OOO입니다.</Block>
-          <Block>
-            OO 프로젝트와 관련해서 OO팀이 주최하는 회의를 진행하고자 합니다.
-            <br />
-            이번 회의일정은 다음과 같습니다.
-          </Block>
-          <Block>
-            {`1. 일시: OOOO년 OO월 OO일 오전/오후 OO시 ~ OO시
-2. 장소: (장소) 
-3. 안건: (안건) 
-4. 참석 대상: (참석 대상) 
-5. 사전 준비사항: (사전 준비사항)`}
-          </Block>
-          <Block>
-            부득이하게 본 회의에 참석이 어려우신 경우, 원활한 회의 진행을 위해
-            OO월 OO일 오전/오후 OO시까지 회신 부탁드립니다.
-          </Block>
-          <Block>감사합니다. OOO 드림.</Block>
-        </Blocks>
+            <Blocks>
+              {template.contents.map((block) => (
+                <Block key={block.id}>
+                  {block.text.split('\n').map((line) => (
+                    <div key={line}>{line}</div>
+                  ))}
+                </Block>
+              ))}
+            </Blocks>
+          </>
+        ) : (
+          <NoTemplateWrapper>
+            <NoTemplateImage src={noTemplateImg} />
+            <Typo type={LIGHT_1}>템플릿을 조합해서 사용해 보세요!</Typo>
+          </NoTemplateWrapper>
+        )}
       </Body>
     </Wrapper>
   );
@@ -72,13 +84,14 @@ const Preview: React.FC<Props> = () => {
 const Wrapper = styled.section`
   width: 100%;
   height: 100vh;
-  padding: 24px 28px;
+  padding: 28px 28px;
   overflow: hidden;
 `;
 
 const Body = styled.div`
   width: 100%;
   height: 100%;
+  position: relative;
   margin-top: 4px;
   padding: 0 20px 40px 40px;
   display: flex;
@@ -97,9 +110,12 @@ const ItemWrapper = styled.div`
 
 const TemplateInfo = styled.div`
   width: 300px;
-  text-overflow: ellipsis;
-  word-break: break-all;
-  white-space: nowrap;
+  p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    white-space: nowrap;
+  }
 `;
 
 const UseTemplateButton = styled.button`
@@ -147,4 +163,21 @@ const Block = styled.div`
   }
 `;
 
+const NoTemplateWrapper = styled.div`
+  width: 296px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
+
+const NoTemplateImage = styled.img`
+  width: 296px;
+  height: 222px;
+`;
 export default Preview;

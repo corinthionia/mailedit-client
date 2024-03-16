@@ -13,27 +13,34 @@ import Border from '@/ui/border/Border';
 import { BaseTemplate } from '@/types/template';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
+import { useSetRecoilState } from 'recoil';
+import { SelectedTemplateAtom } from '@/recoils/selectedTemplate';
 
 interface Props {
   onClick: () => void;
+  selectedBaseTemplate?: BaseTemplate;
   businessTemplates: BaseTemplate[];
   schoolTemplates: BaseTemplate[];
 }
 
 const BaseTemplate: React.FC<Props> = (props) => {
-  const { onClick, businessTemplates, schoolTemplates } = props;
+  const { onClick, selectedBaseTemplate, businessTemplates, schoolTemplates } =
+    props;
   const navigate = useNavigate();
 
   const [selectedTemplate, setSelectedTemplate] = useState<BaseTemplate>(
-    businessTemplates[0]
+    selectedBaseTemplate ?? businessTemplates[0]
   );
+
+  const setTemplateToWorkspace = useSetRecoilState(SelectedTemplateAtom);
 
   const handleTemplateTitleClick = (template: BaseTemplate) => {
     setSelectedTemplate(template);
   };
 
   const goToWorkspace = () => {
-    navigate(`${routes.workspace}?id=${selectedTemplate.id}`);
+    setTemplateToWorkspace(selectedTemplate);
+    navigate(routes.workspace);
   };
 
   return (

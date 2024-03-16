@@ -4,16 +4,28 @@ import React, { useRef } from 'react';
 
 import Logo from '@/assets/svgs/home_sidebar_logo.svg?react';
 import SearchIcon from '@/assets/svgs/home_sidebar_search.svg?react';
-import { MEDIUM_5, REGULAR_4 } from '@/styles/typo';
+import { MEDIUM_5, REGULAR_5 } from '@/styles/typo';
 import Typo from '@/ui/typo/Typo';
 import Accordion from '@/ui/accordion/Accordion';
 import StarIcon from '@/assets/svgs/home_sidebar_star.svg?react';
 import Border from '@/ui/border/Border';
+import { useQuery } from '@tanstack/react-query';
+import { getFilteredBaseTemplatesByCategory } from '@/apis/template';
 
 interface Props {}
 
 const Sidebar: React.FC<Props> = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const getBusinessBaseTemplateQuery = useQuery({
+    queryKey: [],
+    queryFn: () => getFilteredBaseTemplatesByCategory('business'),
+  });
+
+  const getSchoolBaseTemplateQuery = useQuery({
+    queryKey: ['school'],
+    queryFn: () => getFilteredBaseTemplatesByCategory('school'),
+  });
 
   return (
     <Wrapper>
@@ -26,42 +38,38 @@ const Sidebar: React.FC<Props> = () => {
       <TemplateArea ref={scrollRef}>
         <TemplateGroup>
           <GroupTitle>
-            <Typo type={REGULAR_4} color={colors.white}>
+            <Typo type={REGULAR_5} color={colors.white}>
               마이템플릿
             </Typo>
           </GroupTitle>
           <Accordion
             tag={<StarIcon width="16px" height="16px" />}
             title="즐겨찾기"
-            list={[{ title: '결제요청', id: '1' }]}
+            list={getBusinessBaseTemplateQuery.data ?? []}
           />
           <Border color={colors.indigo4} margin="4px 0" />
           <Accordion
             tag={<Tag color={colors.tag.red} />}
             title="그룹1"
-            list={[
-              { title: '결제요청', id: '1' },
-              { title: '결제요청', id: '2' },
-              { title: '결제요청', id: '3' },
-            ]}
+            list={getSchoolBaseTemplateQuery.data ?? []}
           />
         </TemplateGroup>
 
         <TemplateGroup>
           <GroupTitle>
-            <Typo type={REGULAR_4} color={colors.white}>
+            <Typo type={REGULAR_5} color={colors.white}>
               기본템플릿
             </Typo>
           </GroupTitle>
           <Accordion
             tag={<Tag color={colors.indigo2} />}
             title="회사"
-            list={[{ title: '결제요청', id: '0' }]}
+            list={getBusinessBaseTemplateQuery.data ?? []}
           />
           <Accordion
             tag={<Tag color={colors.indigo2} />}
             title="학교"
-            list={[{ title: '결제요청', id: '0' }]}
+            list={getSchoolBaseTemplateQuery.data ?? []}
           />
         </TemplateGroup>
       </TemplateArea>
