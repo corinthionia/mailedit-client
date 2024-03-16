@@ -91,8 +91,9 @@ const Editor: React.FC<Props> = () => {
   };
 
   // Move caret to clicked position
-  // TODO: 빈 블록인 경우 이벤트 동작하지 않음
   const handleClick = (blockIndex: number, lineIndex: number) => {
+    setBlocks(updateBlockContents() ?? []);
+
     setCaretPosition({
       blockIndex,
       lineIndex,
@@ -268,6 +269,8 @@ const Editor: React.FC<Props> = () => {
       caretPosition.blockIndex !== -1 &&
       caretPosition.lineIndex !== -1
     ) {
+      updateBlockContents();
+
       const range = document.createRange();
 
       const currentNode =
