@@ -177,12 +177,11 @@ const Editor = (props: Props) => {
       e.key === 'Backspace' &&
       caretPosition.blockIndex !== 0 &&
       caretPosition.lineIndex === 0 &&
-      caretPosition.characterIndex === 0 &&
       selection?.focusOffset === 0
     ) {
       e.preventDefault();
       deleteBlock(caretPosition.blockIndex);
-      setCommand(e.key);
+      setCommand('Backspace');
     }
 
     // 현재 블록 내에서 줄 바꿈
@@ -201,7 +200,7 @@ const Editor = (props: Props) => {
   };
 
   useEffect(() => {
-    const { blockIndex, lineIndex, characterIndex } = caretPosition;
+    const { blockIndex, lineIndex } = caretPosition;
 
     if (blockIndex === -1 || lineIndex === -1) {
       return;
@@ -229,7 +228,11 @@ const Editor = (props: Props) => {
       return;
     }
 
-    if (command === 'Backspace' && lineIndex === 0 && characterIndex === 0) {
+    if (
+      command === 'Backspace' &&
+      lineIndex === 0 &&
+      (selection?.focusOffset ?? 0) === 0
+    ) {
       setCaretPosition((prev) => ({
         blockIndex: prev.blockIndex - 1,
         lineIndex: 0, // TODO 값 구하기
