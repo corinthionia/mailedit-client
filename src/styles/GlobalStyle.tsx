@@ -75,44 +75,8 @@ const defaultStyle = css`
 
   @font-face {
     font-family: 'Pretendard';
-    font-weight: 700;
     font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-Bold.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-weight: 600;
-    font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-SemiBold.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-weight: 500;
-    font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-Medium.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-weight: 400;
-    font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-Regular.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-weight: 300;
-    font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-Light.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-weight: 200;
-    font-display: swap;
-    src: url('/src/assets/fonts/Pretendard-ExtraLight.woff2') format('woff2');
+    src: url('/src/assets/fonts/pretendard.woff2') format('woff2');
   }
 
   * {
