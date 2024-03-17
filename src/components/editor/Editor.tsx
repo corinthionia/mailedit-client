@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  DragEvent,
   KeyboardEvent,
   SetStateAction,
   useEffect,
@@ -268,6 +269,28 @@ const Editor = (props: Props) => {
     }
   }, [caretPosition]);
 
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, position: number) => {
+    e.dataTransfer.setData('position', position.toString());
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>, blockIndex: number) => {
+    const draggingPosition = Number(e.dataTransfer.getData('position'));
+    const draggingItem = blocks[draggingPosition];
+
+    if (blockIndex === draggingPosition) return;
+
+    const newList = updateBlockContents() ?? [];
+    newList.splice(draggingPosition, 1);
+    newList.splice(blockIndex, 0, draggingItem);
+
+    setBlocks(newList);
+  };
+
   const handleCopyButton = async () => {
     if (blocksRef.current) {
       const text = Array.from(blocksRef.current.childNodes)
@@ -311,7 +334,13 @@ const Editor = (props: Props) => {
         <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
         <Blocks ref={blocksRef}>
           {blocks.map((block, blockIndex) => (
-            <BlockWrapper key={block.id}>
+            <BlockWrapper
+              key={block.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, blockIndex)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, blockIndex)}
+            >
               <GrabButton>
                 <GrabIcon width="6px" height="12px" />
               </GrabButton>

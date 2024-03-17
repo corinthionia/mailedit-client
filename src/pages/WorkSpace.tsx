@@ -15,7 +15,9 @@ interface Props {}
 const WorkSpace: React.FC<Props> = () => {
   const selectedTemplate = useRecoilValue(SelectedTemplateAtom);
 
-  const [blocks, setBlocks] = useState<BaseTemplateContents[]>([]);
+  const [blocks, setBlocks] = useState<BaseTemplateContents[]>([
+    { id: Date.now().toString(), isBlock: true, text: '' },
+  ]);
 
   return (
     <Wrapper>
