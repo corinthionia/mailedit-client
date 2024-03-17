@@ -76,7 +76,7 @@ const defaultStyle = css`
   @font-face {
     font-family: 'Pretendard';
     font-display: swap;
-    src: url('/src/assets/fonts/Pretendard.woff2') format('woff2');
+    src: url('/src/assets/fonts/pretendard.woff2') format('woff2');
   }
 
   * {
