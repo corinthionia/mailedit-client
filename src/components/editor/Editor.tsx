@@ -83,7 +83,7 @@ const Editor = (props: Props) => {
     });
   };
 
-  // Delete a Block with backspace key
+  // Delete a Block with a backspace key
   const deleteBlock = (blockIndex: number) => {
     if (!blocksRef.current) return;
 
