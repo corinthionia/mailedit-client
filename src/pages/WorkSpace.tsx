@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
-import Editor from '@/components/editor/Editor';
+import Editor from '@/components/editor/EditorSection';
 import Preview from '@/components/preview/Preview';
 import Sidebar from '@/components/sidebar/Sidebar';
 import { breakPoint } from '@/styles/breakPoint';
 import { colors } from '@/styles/colors';
-import { BaseTemplateContents } from '@/types/template';
 import Border from '@/ui/border/Border';
 import { useRecoilValue } from 'recoil';
 import { SelectedTemplateAtom } from '@/recoils/selectedTemplate';
@@ -15,21 +14,17 @@ interface Props {}
 const WorkSpace: React.FC<Props> = () => {
   const selectedTemplate = useRecoilValue(SelectedTemplateAtom);
 
-  const [blocks, setBlocks] = useState<BaseTemplateContents[]>([
-    { id: Date.now().toString(), isBlock: true, text: '' },
-  ]);
-
   return (
     <Wrapper>
       <Sidebar />
-      <Preview template={selectedTemplate} setBlocks={setBlocks} />
+      <Preview template={selectedTemplate} />
       <Border
         width="1px"
         height="100vh"
         direction="column"
         color={colors.gray4}
       />
-      <Editor blocks={blocks} setBlocks={setBlocks} />
+      <Editor />
     </Wrapper>
   );
 };

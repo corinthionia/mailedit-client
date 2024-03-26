@@ -4,14 +4,12 @@ import Typo from '@/ui/typo/Typo';
 import { LIGHT_3, SEMI_BOLD_4 } from '@/styles/typo';
 import Thumbnail from '@/components/thumbnail/Thumbnail';
 
-// interface Props {}
-
 const UserTemplate = () => {
   return (
     <Wrapper>
       <MyTemplateInfo>
         <Typo type={SEMI_BOLD_4} color={colors.gray7}>
-          주현 님의 마이템플릿
+          {`주현 님의 마이템플릿`}
         </Typo>
         <Typo type={LIGHT_3}>
           저장된 템플릿 <span>18개</span>

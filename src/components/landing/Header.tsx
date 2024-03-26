@@ -5,12 +5,19 @@ import { colors } from '@/styles/colors';
 
 import Logo from '@/assets/svgs/landing_header_logo.svg?react';
 import landingHeader from '@/assets/videos/landing_header.mp4';
+import AuthModal from '@/components/auth/AuthModal';
+import { useQuery } from '@tanstack/react-query';
+import { getSession, logout } from '@/apis/auth';
 
 const Header = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState<boolean>(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+
+  const getSessionQuery = useQuery({
+    queryKey: [],
+    queryFn: getSession,
+  });
 
   const handleSignInBtnClick = () => {
     setIsSignInModalOpen(!isSignInModalOpen);
@@ -21,24 +28,30 @@ const Header = () => {
   };
 
   const handleSignOutBtnClick = () => {
-    setIsLogin(false);
-    navigate('/');
+    logout();
+    getSessionQuery.refetch();
   };
 
   const goToHome = () => {
     navigate('/home');
   };
 
+  if (isSignInModalOpen || isSignUpModalOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+
   return (
     <>
       <Top>
         <Logo width="163px" height="32px" />
-        {isLogin ? (
-          <Option isLogin={isLogin}>
+        {getSessionQuery.data ? (
+          <Option isLogin={Boolean(getSessionQuery.data)}>
             <Text onClick={handleSignOutBtnClick}>로그아웃</Text>
           </Option>
         ) : (
-          <Option isLogin={isLogin}>
+          <Option isLogin={Boolean(getSessionQuery.data)}>
             <Text onClick={goToHome}>둘러보기</Text>
             <Border />
             <Text onClick={handleSignInBtnClick}>로그인</Text>
@@ -50,6 +63,10 @@ const Header = () => {
       <Video autoPlay loop muted playsInline>
         <source src={landingHeader} type="video/mp4" />
       </Video>
+
+      {isSignInModalOpen && (
+        <AuthModal setIsSignInModalOpen={setIsSignInModalOpen} />
+      )}
     </>
   );
 };

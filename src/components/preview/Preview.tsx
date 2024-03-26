@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
 import GoToHomeIcon from '@/assets/svgs/workspace_preview_go_to_home.svg?react';
 import {
@@ -13,24 +13,23 @@ import { colors } from '@/styles/colors';
 import { breakPoint } from '@/styles/breakPoint';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
-import { BaseTemplate, BaseTemplateContents } from '@/types/template';
+import { BaseTemplate } from '@/types/template';
 
 import noTemplateImg from '@/assets/imgs/workspace_preview_no_template.png';
 
 interface Props {
   template: BaseTemplate | null;
-  setBlocks: Dispatch<SetStateAction<BaseTemplateContents[]>>;
 }
 
 const Preview: React.FC<Props> = (props: Props) => {
-  const { template, setBlocks } = props;
+  const { template } = props;
 
   const navigate = useNavigate();
 
   const handleUseTemplateButtonClick = () => {
     if (!template) return;
 
-    setBlocks((prev) => [...prev, ...template.contents]);
+    // setBlocks((prev) => [...prev, ...template.contents]);
   };
 
   const goToHome = () => {

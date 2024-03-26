@@ -1,3 +1,7 @@
+import styled from '@emotion/styled';
+import { colors } from '@/styles/colors';
+import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
+import { BaseTemplateContents } from '@/types/template';
 import {
   Dispatch,
   DragEvent,
@@ -7,23 +11,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import styled from '@emotion/styled';
+import { LIGHT_1, LIGHT_2, REGULAR_7 } from '@/styles/typo';
 import { css } from '@emotion/react';
-import { colors } from '@/styles/colors';
-import Typo from '@/ui/typo/Typo';
-import {
-  LIGHT_1,
-  LIGHT_2,
-  MEDIUM_0,
-  REGULAR_6,
-  REGULAR_7,
-} from '@/styles/typo';
-import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
-import TooltipIcon from '@/assets/svgs/workspace_editor_tooltip.svg?react';
 import { breakPoint } from '@/styles/breakPoint';
-import { copyTextToClipBoard } from '@/utils/copyText';
 import type { Command } from '@/types/command';
-import { BaseTemplateContents } from '@/types/template';
+import { copyTextToClipBoard } from '@/utils/copyText';
 
 interface Props {
   blocks: BaseTemplateContents[];
@@ -33,15 +25,15 @@ interface Props {
 const Editor = (props: Props) => {
   const { blocks, setBlocks } = props;
 
-  const selection = window.getSelection();
-  const blocksRef = useRef<HTMLDivElement>(null);
-
   const [command, setCommand] = useState<Command>(null);
   const [caretPosition, setCaretPosition] = useState({
     blockIndex: -1,
     lineIndex: -1,
     characterIndex: 0,
   });
+
+  const selection = window.getSelection();
+  const blocksRef = useRef<HTMLDivElement>(null);
 
   const getNodeByIndex = (blockIndex: number, lineIndex: number) => {
     if (!blocksRef.current) return;
@@ -75,7 +67,7 @@ const Editor = (props: Props) => {
 
   // Move caret to clicked position
   const handleClick = (blockIndex: number, lineIndex: number) => {
-    setBlocks(updateBlockContents() ?? []);
+    setBlocks((prev) => updateBlockContents() || prev);
 
     setCaretPosition({
       blockIndex,
@@ -243,7 +235,7 @@ const Editor = (props: Props) => {
       setCommand(null);
       return;
     }
-  }, [blocks, caretPosition, command]);
+  }, [blocks, caretPosition, command, selection?.focusOffset]);
 
   useEffect(() => {
     if (
@@ -270,7 +262,22 @@ const Editor = (props: Props) => {
       selection?.removeAllRanges();
       selection?.addRange(range);
     }
-  }, [caretPosition]);
+  }, [caretPosition, selection]);
+
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const animation = requestAnimationFrame(() => setEnabled(true));
+
+    return () => {
+      cancelAnimationFrame(animation);
+      setEnabled(false);
+    };
+  }, []);
+
+  if (!enabled) {
+    return null;
+  }
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, position: number) => {
     e.dataTransfer.setData('position', position.toString());
@@ -308,33 +315,23 @@ const Editor = (props: Props) => {
     }
   };
 
+  // const onDragEnd = ({ source, destination }: DropResult) => {
+  //   setBlocks((prev) => updateBlockContents() || prev);
+
+  //   if (!destination) return;
+
+  //   const newList = updateBlockContents() ?? [];
+  //   const [slice] = newList.slice(source.index, 1);
+  //   newList.splice(destination.index, 0, slice);
+
+  //   setBlocks(newList);
+  // };
+
   return (
     <Wrapper>
-      <TemplateInfoWrapper>
-        <InfoWrapper>
-          <TitleInput
-            placeholder="템플릿의 제목을 입력하세요"
-            spellCheck={false}
-            autoFocus
-          />
+      <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
 
-          <InfoItemWrapper>
-            <Typo type={REGULAR_7}>메모</Typo>
-            <MemoInput
-              placeholder="상황, 받는 사람, 목적 등을 입력하세요"
-              spellCheck={false}
-            />
-          </InfoItemWrapper>
-          <InfoItemWrapper>
-            <Typo type={REGULAR_7}>그룹</Typo>
-            <GroupButton>그룹 지정하기</GroupButton>
-          </InfoItemWrapper>
-        </InfoWrapper>
-        <TooltipButton />
-      </TemplateInfoWrapper>
-
-      <Edit>
-        <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
+      <DroppableArea>
         <Blocks ref={blocksRef}>
           {blocks.map((block, blockIndex) => (
             <BlockWrapper
@@ -369,119 +366,12 @@ const Editor = (props: Props) => {
             </BlockWrapper>
           ))}
         </Blocks>
-      </Edit>
-
-      <SaveButton>템플릿 저장하기</SaveButton>
+      </DroppableArea>
     </Wrapper>
   );
 };
 
-const Block = styled.div<{ isBlock: boolean }>`
-  ${LIGHT_2};
-  width: calc(100% - 28px);
-  min-height: 30px;
-  padding: 4px 12px;
-  letter-spacing: -0.5%;
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 170%;
-  background: none;
-  border-radius: 2px;
-  border: 1px solid transparent;
-
-  &:focus {
-    outline: none;
-    border: 1px solid ${colors.primary};
-  }
-
-  ${(props) =>
-    props.isBlock &&
-    css`
-      background: rgba(82, 116, 239, 0.15);
-      border: 1px solid ${colors.primary};
-    `};
-
-  div {
-    min-height: 24px;
-    display: flex;
-    align-items: center;
-  }
-
-  @media screen and (min-width: ${breakPoint.xl}) {
-    ${LIGHT_1};
-    line-height: 200%;
-  }
-`;
-
-const Wrapper = styled.section`
-  grid-area: 'editor';
-  width: 100%;
-  height: 100vh;
-  padding: 36px 40px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-`;
-
-const TemplateInfoWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 12px;
-  padding-right: 4px;
-`;
-
-const TitleInput = styled.input`
-  ${MEDIUM_0};
-  width: 454px;
-  height: 29px;
-  margin-bottom: 14px;
-  color: ${colors.black};
-  ::placeholder {
-    color: ${colors.gray5};
-  }
-`;
-
-const InfoWrapper = styled.div`
-  max-width: 360px;
-`;
-
-const InfoItemWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  & + & {
-    margin-top: 6px;
-  }
-`;
-
-const MemoInput = styled.input`
-  ${REGULAR_7};
-  width: 304px;
-  padding: 4px 8px;
-  border-radius: 2px;
-  background: ${colors.gray1};
-  color: ${colors.gray6};
-  ::placeholder {
-    color: ${colors.gray4};
-  }
-`;
-
-const GroupButton = styled.button`
-  ${REGULAR_7};
-  background: ${colors.indigo4};
-  padding: 3px 8px;
-  border-radius: 4px;
-  color: ${colors.white};
-`;
-
-const TooltipButton = styled(TooltipIcon)`
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-`;
-
-const Edit = styled.div`
+const Wrapper = styled.div`
   background: ${colors.bg.light};
   width: 100%;
   display: flex;
@@ -492,6 +382,11 @@ const Edit = styled.div`
   margin-bottom: 18px;
   padding: 16px 18px;
   overflow: hidden;
+`;
+
+const DroppableArea = styled.div`
+  width: 100%;
+  height: 100%;
 `;
 
 const CopyButton = styled.span`
@@ -531,6 +426,7 @@ const BlockWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  user-drag: none;
 `;
 
 const GrabButton = styled.div`
@@ -551,16 +447,41 @@ const GrabButton = styled.div`
   }
 `;
 
-const SaveButton = styled.button`
-  ${REGULAR_6};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 28px;
-  margin-left: auto;
-  color: ${colors.white};
-  background: ${colors.primary};
-  border-radius: 4px;
+const Block = styled.div<{ isBlock: boolean }>`
+  ${LIGHT_2};
+  width: calc(100% - 28px);
+  min-height: 30px;
+  padding: 4px 12px;
+  letter-spacing: -0.5%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 170%;
+  background: none;
+  border-radius: 2px;
+  border: 1px solid transparent;
+
+  &:focus {
+    outline: none;
+    border: 1px solid ${colors.primary};
+  }
+
+  ${(props) =>
+    props.isBlock &&
+    css`
+      background: rgba(82, 116, 239, 0.15);
+      border: 1px solid ${colors.primary};
+    `};
+
+  div {
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+  }
+
+  @media screen and (min-width: ${breakPoint.xl}) {
+    ${LIGHT_1};
+    line-height: 200%;
+  }
 `;
 
 export default Editor;

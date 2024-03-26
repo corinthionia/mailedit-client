@@ -20,6 +20,7 @@ import {
   BaseTemplate as BaseTemplateType,
 } from '@/types/template';
 import Option from '@/ui/option/Option';
+import AuthModal from '@/components/auth/AuthModal';
 
 interface Props {}
 
@@ -29,6 +30,8 @@ const Home: React.FC<Props> = () => {
   const goToWorkspace = () => {
     navigate(routes.workspace);
   };
+
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState<boolean>(false);
 
   const [isOptionExpanded, setIsOptionExpanded] = useState<boolean>(false);
 
@@ -69,99 +72,110 @@ const Home: React.FC<Props> = () => {
   });
 
   return (
-    <Wrapper>
-      <Sidebar />
-      <Main>
-        <Top>
-          <Typo type={LIGHT_3} color={colors.gray6} pointer>
-            로그아웃
-          </Typo>
-          <ItemWrapper>
-            <Typo type={REGULAR_6} color={colors.primary}>
-              안녕하세요 주현 님, 오늘도 이메일 작성의 고수가 되어 보세요!
+    <>
+      <Wrapper>
+        <Sidebar />
+        <Main>
+          <Top>
+            <Typo type={LIGHT_3} color={colors.gray6} pointer>
+              {'로그아웃'}
             </Typo>
-            <GoToWorkspaceButton onClick={goToWorkspace}>
-              <Typo type={REGULAR_6} color={colors.white}>
-                템플릿 만들기
+            <ItemWrapper>
+              <Typo type={REGULAR_6} color={colors.primary}>
+                {`안녕하세요 주현 님, 오늘도 이메일 작성의 고수가 되어 보세요!`}
               </Typo>
-            </GoToWorkspaceButton>
-          </ItemWrapper>
-        </Top>
-
-        <UserTemplate />
-
-        <Bottom>
-          <BaseTemplateArea>
-            <BaseTemplateInfo>
-              <BaseTemplateText>
-                <Typo type={SEMI_BOLD_4}>회사에서 일잘러가 되려면?</Typo>
-                <Typo type={LIGHT_2}>
-                  MailedIt에서 제공하는 기본 템플릿을 사용해 이메일 작성 효율을
-                  좀 더 높여 보세요.
+              <GoToWorkspaceButton onClick={goToWorkspace}>
+                <Typo type={REGULAR_6} color={colors.white}>
+                  템플릿 만들기
                 </Typo>
-              </BaseTemplateText>
+              </GoToWorkspaceButton>
+            </ItemWrapper>
+          </Top>
 
-              <Option
-                onClick={handleOptionClick}
-                isOptionExpanded={isOptionExpanded}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-              />
-            </BaseTemplateInfo>
+          <UserTemplate />
 
-            <BaseTemplates>
-              <tbody>
-                <tr>
-                  {selectedCategory === 'business'
-                    ? getBusinessBaseTemplateQuery.data
-                        ?.slice(0, 5)
-                        .map((template) => (
-                          <td
-                            key={template.id}
-                            onClick={() =>
-                              handleBaseTemplateTitleClick(template)
-                            }
-                          >
-                            {template.title}
-                          </td>
-                        ))
-                    : getSchoolBaseTemplateQuery.data
-                        ?.slice(0, 5)
-                        .map((template) => (
-                          <td
-                            key={template.id}
-                            onClick={() =>
-                              handleBaseTemplateTitleClick(template)
-                            }
-                          >
-                            {template.title}
-                          </td>
-                        ))}
-                  <td onClick={handleETCButtonClick}>
-                    <ETC width="22px" height="4px" />
-                  </td>
-                </tr>
-              </tbody>
-            </BaseTemplates>
-          </BaseTemplateArea>
+          <Bottom>
+            <BaseTemplateArea>
+              <BaseTemplateInfo>
+                <BaseTemplateText>
+                  <Typo type={SEMI_BOLD_4}>회사에서 일잘러가 되려면?</Typo>
+                  <Typo type={LIGHT_2}>
+                    MailedIt에서 제공하는 기본 템플릿을 사용해 이메일 작성
+                    효율을 좀 더 높여 보세요.
+                  </Typo>
+                </BaseTemplateText>
 
-          <img src={companyImage} alt="company" width="232px" height="154px" />
-        </Bottom>
+                <Option
+                  onClick={handleOptionClick}
+                  isOptionExpanded={isOptionExpanded}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                />
+              </BaseTemplateInfo>
 
-        {isBaseTemplateModalOpened && (
-          <BaseTemplate
-            onClick={handleETCButtonClick}
-            selectedBaseTemplate={selectedTemplate}
-            businessTemplates={
-              getBusinessBaseTemplateQuery.data as BaseTemplateType[]
-            }
-            schoolTemplates={
-              getSchoolBaseTemplateQuery.data as BaseTemplateType[]
-            }
-          />
-        )}
-      </Main>
-    </Wrapper>
+              <BaseTemplates>
+                <tbody>
+                  <tr>
+                    {selectedCategory === 'business'
+                      ? getBusinessBaseTemplateQuery.data
+                          ?.slice(0, 5)
+                          .map((template) => (
+                            <td
+                              key={template.id}
+                              onClick={() =>
+                                handleBaseTemplateTitleClick(template)
+                              }
+                            >
+                              {template.title}
+                            </td>
+                          ))
+                      : getSchoolBaseTemplateQuery.data
+                          ?.slice(0, 5)
+                          .map((template) => (
+                            <td
+                              key={template.id}
+                              onClick={() =>
+                                handleBaseTemplateTitleClick(template)
+                              }
+                            >
+                              {template.title}
+                            </td>
+                          ))}
+                    <td onClick={handleETCButtonClick}>
+                      <ETC width="22px" height="4px" />
+                    </td>
+                  </tr>
+                </tbody>
+              </BaseTemplates>
+            </BaseTemplateArea>
+
+            <img
+              src={companyImage}
+              alt="company"
+              width="232px"
+              height="154px"
+            />
+          </Bottom>
+
+          {isBaseTemplateModalOpened && (
+            <BaseTemplate
+              onClick={handleETCButtonClick}
+              selectedBaseTemplate={selectedTemplate}
+              businessTemplates={
+                getBusinessBaseTemplateQuery.data as BaseTemplateType[]
+              }
+              schoolTemplates={
+                getSchoolBaseTemplateQuery.data as BaseTemplateType[]
+              }
+            />
+          )}
+        </Main>
+      </Wrapper>
+
+      {isSignInModalOpen && (
+        <AuthModal setIsSignInModalOpen={setIsSignInModalOpen} />
+      )}
+    </>
   );
 };
 
