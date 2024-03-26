@@ -4,7 +4,6 @@ import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
 import { BaseTemplateContents } from '@/types/template';
 import {
   Dispatch,
-  DragEvent,
   KeyboardEvent,
   SetStateAction,
   useEffect,
@@ -16,6 +15,12 @@ import { css } from '@emotion/react';
 import { breakPoint } from '@/styles/breakPoint';
 import type { Command } from '@/types/command';
 import { copyTextToClipBoard } from '@/utils/copyText';
+import {
+  DragDropContext,
+  Draggable,
+  DropResult,
+  Droppable,
+} from 'react-beautiful-dnd';
 
 interface Props {
   blocks: BaseTemplateContents[];
@@ -46,21 +51,20 @@ const Editor = (props: Props) => {
   const updateBlockContents = () => {
     if (!blocksRef.current) return;
 
-    const updatedBlocks = Array.from(blocksRef.current.childNodes).map(
-      (block, index) => {
-        const lines = Array.from(block.childNodes[1].childNodes);
-        const isBlock =
-          blocksRef.current?.children[index].children[1].getAttribute(
-            'data-is-block'
-          );
-
-        return {
-          id: `${Date.now().toString()} ${index}`,
-          isBlock: isBlock === 'true',
-          text: lines.map((line) => line.textContent).join('\n'),
-        };
-      }
+    const filteredblocks = Array.from(blocksRef.current.children).filter(
+      (block) => block.children[1]
     );
+
+    const updatedBlocks = filteredblocks.map((block, index) => {
+      const lines = Array.from(block.children[1]?.children);
+      const isBlock = block.children[1].getAttribute('data-is-block');
+
+      return {
+        id: `${Date.now().toString()} ${index}`,
+        isBlock: isBlock === 'true',
+        text: lines.map((line) => line.textContent).join('\n'),
+      };
+    });
 
     return updatedBlocks;
   };
@@ -279,28 +283,6 @@ const Editor = (props: Props) => {
     return null;
   }
 
-  const handleDragStart = (e: DragEvent<HTMLDivElement>, position: number) => {
-    e.dataTransfer.setData('position', position.toString());
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>, blockIndex: number) => {
-    const draggingPosition = Number(e.dataTransfer.getData('position'));
-    const draggingItem = blocks[draggingPosition];
-
-    if (blockIndex === draggingPosition) return;
-
-    const newList = updateBlockContents() ?? [];
-    newList.splice(draggingPosition, 1);
-    newList.splice(blockIndex, 0, draggingItem);
-
-    setBlocks(newList);
-  };
-
   const handleCopyButton = async () => {
     if (blocksRef.current) {
       const text = Array.from(blocksRef.current.childNodes)
@@ -315,58 +297,72 @@ const Editor = (props: Props) => {
     }
   };
 
-  // const onDragEnd = ({ source, destination }: DropResult) => {
-  //   setBlocks((prev) => updateBlockContents() || prev);
+  const handleDragEnd = ({ source, destination }: DropResult) => {
+    if (!destination) return;
 
-  //   if (!destination) return;
+    const newList = updateBlockContents() ?? blocks;
+    const [slice] = newList.splice(source.index, 1);
+    newList.splice(destination.index, 0, slice);
 
-  //   const newList = updateBlockContents() ?? [];
-  //   const [slice] = newList.slice(source.index, 1);
-  //   newList.splice(destination.index, 0, slice);
-
-  //   setBlocks(newList);
-  // };
+    setBlocks(newList);
+  };
 
   return (
     <Wrapper>
       <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
 
-      <DroppableArea>
-        <Blocks ref={blocksRef}>
-          {blocks.map((block, blockIndex) => (
-            <BlockWrapper
-              key={block.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, blockIndex)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, blockIndex)}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="droppable">
+          {(droppableProvided) => (
+            <DroppableArea
+              ref={droppableProvided.innerRef}
+              {...droppableProvided.droppableProps}
             >
-              <GrabButton>
-                <GrabIcon width="6px" height="12px" />
-              </GrabButton>
-              <Block
-                spellCheck
-                contentEditable
-                onKeyDown={handleKeyDown}
-                isBlock={block.isBlock}
-                data-block-index={blockIndex}
-                data-is-block={block.isBlock}
-                suppressContentEditableWarning
-              >
-                {block.text.split('\n').map((line, lineIndex) => (
-                  <div
-                    key={`${Date.now().toString()} ${line}`}
-                    data-line-index={lineIndex}
-                    onClick={() => handleClick(blockIndex, lineIndex)}
+              <Blocks ref={blocksRef}>
+                {blocks.map((block, blockIndex) => (
+                  <Draggable
+                    draggableId={block.id}
+                    key={block.id}
+                    index={blockIndex}
                   >
-                    {line}
-                  </div>
+                    {(provided) => (
+                      <BlockWrapper
+                        ref={provided.innerRef}
+                        {...provided.dragHandleProps}
+                        {...provided.draggableProps}
+                      >
+                        <GrabButton>
+                          <GrabIcon width="6px" height="12px" />
+                        </GrabButton>
+                        <Block
+                          spellCheck
+                          contentEditable
+                          onKeyDown={handleKeyDown}
+                          isBlock={block.isBlock}
+                          data-block-index={blockIndex}
+                          data-is-block={block.isBlock}
+                          suppressContentEditableWarning
+                        >
+                          {block.text.split('\n').map((line, lineIndex) => (
+                            <div
+                              key={`${Date.now().toString()} ${line}`}
+                              data-line-index={lineIndex}
+                              onClick={() => handleClick(blockIndex, lineIndex)}
+                            >
+                              {line}
+                            </div>
+                          ))}
+                        </Block>
+                      </BlockWrapper>
+                    )}
+                  </Draggable>
                 ))}
-              </Block>
-            </BlockWrapper>
-          ))}
-        </Blocks>
-      </DroppableArea>
+                {droppableProvided.placeholder}
+              </Blocks>
+            </DroppableArea>
+          )}
+        </Droppable>
+      </DragDropContext>
     </Wrapper>
   );
 };
