@@ -29,7 +29,6 @@ const Header = () => {
 
   const handleSignOutBtnClick = () => {
     logout();
-    getSessionQuery.refetch();
   };
 
   const goToHome = () => {

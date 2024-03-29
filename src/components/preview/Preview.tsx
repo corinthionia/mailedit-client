@@ -13,9 +13,11 @@ import { colors } from '@/styles/colors';
 import { breakPoint } from '@/styles/breakPoint';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
-import { BaseTemplate } from '@/types/template';
+import { BaseTemplate, BaseTemplateContents } from '@/types/template';
 
 import noTemplateImg from '@/assets/imgs/workspace_preview_no_template.png';
+import { useSetRecoilState } from 'recoil';
+import { BlocksAtom } from '@/recoils/blocks';
 
 interface Props {
   template: BaseTemplate | null;
@@ -23,17 +25,21 @@ interface Props {
 
 const Preview: React.FC<Props> = (props: Props) => {
   const { template } = props;
+  const setBlocks = useSetRecoilState(BlocksAtom);
 
   const navigate = useNavigate();
+  const goToHome = () => {
+    navigate(routes.home);
+  };
 
   const handleUseTemplateButtonClick = () => {
     if (!template) return;
 
-    // setBlocks((prev) => [...prev, ...template.contents]);
+    setBlocks((prev) => [...prev, ...template.contents]);
   };
 
-  const goToHome = () => {
-    navigate(routes.home);
+  const handleBlockClick = (block: BaseTemplateContents) => {
+    setBlocks((prev) => [...prev, block]);
   };
 
   return (
@@ -61,7 +67,7 @@ const Preview: React.FC<Props> = (props: Props) => {
 
             <Blocks>
               {template.contents.map((block) => (
-                <Block key={block.id}>
+                <Block key={block.id} onClick={() => handleBlockClick(block)}>
                   {block.text.split('\n').map((line) => (
                     <div key={line}>{line}</div>
                   ))}

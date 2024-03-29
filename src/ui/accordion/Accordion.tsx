@@ -26,7 +26,11 @@ const Accordion: React.FC<Props> = (props) => {
   const setSelectedTemplate = useSetRecoilState(SelectedTemplateAtom);
 
   const handleClickAccordion = () => {
-    if (parentRef.current === null || childRef.current === null) {
+    if (
+      list.length === 0 ||
+      parentRef.current === null ||
+      childRef.current === null
+    ) {
       return;
     }
 
@@ -62,16 +66,17 @@ const Accordion: React.FC<Props> = (props) => {
 
       <ListWrapper ref={parentRef}>
         <ListItem ref={childRef}>
-          {list.map((template) => (
-            <Typo
-              key={template.id}
-              type={EXTRA_LIGHT_1}
-              color={colors.white}
-              onClick={() => handleBaseTemplateTitleClick(template)}
-            >
-              {template.title}
-            </Typo>
-          ))}
+          {!!list.length &&
+            list.map((template) => (
+              <Typo
+                key={template.id}
+                type={EXTRA_LIGHT_1}
+                color={colors.white}
+                onClick={() => handleBaseTemplateTitleClick(template)}
+              >
+                {template.title}
+              </Typo>
+            ))}
         </ListItem>
       </ListWrapper>
     </Wrapper>

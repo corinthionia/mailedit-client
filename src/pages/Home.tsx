@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { routes } from '@/constants/routes';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,9 @@ import {
 } from '@/types/template';
 import Option from '@/ui/option/Option';
 import AuthModal from '@/components/auth/AuthModal';
+import { getUser, logout } from '@/apis/auth';
+import { useRecoilState } from 'recoil';
+import { UserAtom } from '@/recoils/user';
 
 interface Props {}
 
@@ -61,8 +64,25 @@ const Home: React.FC<Props> = () => {
     document.body.style.overflow = 'auto';
   }
 
+  const getUserQuery = useQuery({
+    queryKey: ['user'],
+    queryFn: getUser,
+  });
+
+  const [user, setUser] = useRecoilState(UserAtom);
+
+  useEffect(() => {
+    if (getUserQuery.data?.user_metadata) {
+      setUser({
+        email: getUserQuery.data.user_metadata.email,
+        name: getUserQuery.data.user_metadata.name,
+      });
+      localStorage.setItem('userId', getUserQuery.data?.id);
+    }
+  }, [getUserQuery.data, setUser]);
+
   const getBusinessBaseTemplateQuery = useQuery({
-    queryKey: [],
+    queryKey: ['base'],
     queryFn: () => getFilteredBaseTemplatesByCategory('business'),
   });
 
@@ -71,18 +91,34 @@ const Home: React.FC<Props> = () => {
     queryFn: () => getFilteredBaseTemplatesByCategory('school'),
   });
 
+  const handleSignIn = () => {
+    setIsSignInModalOpen(true);
+  };
+
+  const handleSignOutBtnClick = async () => {
+    setUser({ email: '', name: '' });
+    localStorage.clear();
+    await logout();
+    getUserQuery.refetch();
+  };
+
   return (
     <>
       <Wrapper>
         <Sidebar />
         <Main>
           <Top>
-            <Typo type={LIGHT_3} color={colors.gray6} pointer>
-              {'로그아웃'}
+            <Typo
+              type={LIGHT_3}
+              color={colors.gray6}
+              pointer
+              onClick={user.name ? handleSignOutBtnClick : handleSignIn}
+            >
+              {user.name ? '로그아웃' : '로그인'}
             </Typo>
             <ItemWrapper>
               <Typo type={REGULAR_6} color={colors.primary}>
-                {`안녕하세요 주현 님, 오늘도 이메일 작성의 고수가 되어 보세요!`}
+                {`안녕하세요${user.name && ' ' + user.name}, 오늘도 이메일 작성의 고수가 되어 보세요!`}
               </Typo>
               <GoToWorkspaceButton onClick={goToWorkspace}>
                 <Typo type={REGULAR_6} color={colors.white}>
@@ -117,7 +153,8 @@ const Home: React.FC<Props> = () => {
                 <tbody>
                   <tr>
                     {selectedCategory === 'business'
-                      ? getBusinessBaseTemplateQuery.data
+                      ? getBusinessBaseTemplateQuery.data &&
+                        getBusinessBaseTemplateQuery.data
                           ?.slice(0, 5)
                           .map((template) => (
                             <td
@@ -129,8 +166,9 @@ const Home: React.FC<Props> = () => {
                               {template.title}
                             </td>
                           ))
-                      : getSchoolBaseTemplateQuery.data
-                          ?.slice(0, 5)
+                      : getSchoolBaseTemplateQuery.data &&
+                        getSchoolBaseTemplateQuery.data
+                          .slice(0, 5)
                           .map((template) => (
                             <td
                               key={template.id}

@@ -3,13 +3,24 @@ import styled from '@emotion/styled';
 import Typo from '@/ui/typo/Typo';
 import { LIGHT_3, SEMI_BOLD_4 } from '@/styles/typo';
 import Thumbnail from '@/components/thumbnail/Thumbnail';
+import { useRecoilValue } from 'recoil';
+import { UserAtom } from '@/recoils/user';
+import { useQuery } from '@tanstack/react-query';
+import { getUserTemplates } from '@/apis/template';
 
 const UserTemplate = () => {
+  const user = useRecoilValue(UserAtom);
+
+  const getUserTemplatesQuery = useQuery({
+    queryKey: ['userTemplate'],
+    queryFn: () => getUserTemplates(localStorage.getItem('userId') ?? ''),
+  });
+
   return (
     <Wrapper>
       <MyTemplateInfo>
         <Typo type={SEMI_BOLD_4} color={colors.gray7}>
-          {`주현 님의 마이템플릿`}
+          {`${user.name && user.name + ' 님의 '}마이템플릿`}
         </Typo>
         <Typo type={LIGHT_3}>
           저장된 템플릿 <span>18개</span>
@@ -17,11 +28,19 @@ const UserTemplate = () => {
       </MyTemplateInfo>
 
       <Templates>
-        <Thumbnail
-          title="안내문 등 제목이 들어가는 위치다"
-          memo="메모가 일단 표시된다 그리고 만약 사용자가 안 쓴 경우 첫 줄을 자동으로넣어준다는 메모가 일단 표시된다 그리고 만약 사용자가 안 쓴 경우 첫 줄을 자동으로넣어준다는"
-          updatedAt="2022-01-12 15:24"
-        />
+        {getUserTemplatesQuery.data ? (
+          getUserTemplatesQuery.data?.map((template) => (
+            <Thumbnail
+              templateId={template.id}
+              title={template.title}
+              memo={template.memo}
+              updatedAt={template.updatedAt}
+              isStar={template.isStar}
+            />
+          ))
+        ) : (
+          <div></div>
+        )}
       </Templates>
     </Wrapper>
   );
@@ -52,7 +71,8 @@ const MyTemplateInfo = styled.div`
 
 const Templates = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  // grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  grid-template-columns: repeat(auto-fit, 238px);
   row-gap: 16px;
   width: calc(100% - 16px);
   height: calc(100% - 48px);

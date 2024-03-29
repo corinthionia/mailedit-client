@@ -6,18 +6,61 @@ import { colors } from '@/styles/colors';
 import BinIcon from '@/assets/svgs/home_bin.svg?react';
 import StarEmptyIcon from '@/assets/svgs/home_star_empty.svg?react';
 import StarFilledIcon from '@/assets/svgs/home_star_filled.svg?react';
+import {
+  deleteUserTemplate,
+  getUserTemplates,
+  postStarUserTemplate,
+} from '@/apis/template';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 interface Props {
+  templateId: string;
   title: string;
   memo: string;
   updatedAt: string;
+  isStar: boolean;
 }
 
 const Thumbnail: React.FC<Props> = (props) => {
-  const { title, memo, updatedAt } = props;
-  const [isStared, setIsStared] = useState<boolean>(false);
+  const { templateId, title, memo, updatedAt, isStar } = props;
+  const [isStared, setIsStared] = useState<boolean>(isStar);
+
+  const date = new Date(updatedAt).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const time = new Date(updatedAt).toLocaleTimeString('ko-KR');
+
+  const deleteUserTemplateMutation = useMutation({
+    mutationKey: ['deleteUserTemplate'],
+    mutationFn: () =>
+      deleteUserTemplate(localStorage.getItem('userId') ?? '', templateId),
+  });
+
+  const getUserTemplatesQuery = useQuery({
+    queryKey: ['userTemplate'],
+    queryFn: () => getUserTemplates(localStorage.getItem('userId') ?? ''),
+  });
+
+  const postStarUserTemplateMutation = useMutation({
+    mutationKey: ['starTemplate'],
+    mutationFn: () =>
+      postStarUserTemplate(
+        localStorage.getItem('userId') ?? '',
+        templateId,
+        !isStar
+      ),
+  });
+
+  const handleDeleteIconClick = () => {
+    deleteUserTemplateMutation.mutate();
+    getUserTemplatesQuery.refetch();
+  };
 
   const handleClickStar = () => {
+    postStarUserTemplateMutation.mutate();
     setIsStared(!isStared);
   };
 
@@ -60,9 +103,10 @@ const Thumbnail: React.FC<Props> = (props) => {
 
       <Bottom>
         <Typo type={REGULAR_8} color={colors.gray5}>
-          {updatedAt}에 수정됨
+          {`${date} ${time} 수정됨`}
         </Typo>
-        <DeleteIconWrapper>
+
+        <DeleteIconWrapper onClick={handleDeleteIconClick}>
           <BinIcon width="14px" height="14px" />
         </DeleteIconWrapper>
       </Bottom>

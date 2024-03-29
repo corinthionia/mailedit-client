@@ -38,3 +38,49 @@ export const getBaseTemplatesById = async (id: string) => {
     return error;
   }
 };
+
+export const getUserTemplates = async (userId: string) => {
+  const { data: USER_TEMPLATE_TB } = await supabase
+    .from('USER_TEMPLATE_TB')
+    .select('*')
+    .eq('userId', userId);
+
+  return USER_TEMPLATE_TB;
+};
+
+export const deleteUserTemplate = async (
+  userId: string,
+  templateId: string
+) => {
+  const { error } = await supabase
+    .from('USER_TEMPLATE_TB')
+    .delete()
+    .eq('userId', userId)
+    .eq('id', templateId);
+
+  return error;
+};
+
+export const postStarUserTemplate = async (
+  userId: string,
+  templateId: string,
+  isStar: boolean
+) => {
+  const { data } = await supabase
+    .from('USER_TEMPLATE_TB')
+    .update({ isStar: isStar })
+    .eq('userId', userId)
+    .eq('id', templateId);
+
+  return data;
+};
+
+export const getStarUserTemplate = async (userId: string) => {
+  const { data } = await supabase
+    .from('USER_TEMPLATE_TB')
+    .select('*')
+    .eq('userId', userId)
+    .eq('isStar', true);
+
+  return data;
+};

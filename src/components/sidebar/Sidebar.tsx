@@ -10,15 +10,29 @@ import Accordion from '@/ui/accordion/Accordion';
 import StarIcon from '@/assets/svgs/home_sidebar_star.svg?react';
 import Border from '@/ui/border/Border';
 import { useQuery } from '@tanstack/react-query';
-import { getFilteredBaseTemplatesByCategory } from '@/apis/template';
+import {
+  getFilteredBaseTemplatesByCategory,
+  getStarUserTemplate,
+  getUserTemplates,
+} from '@/apis/template';
 
 interface Props {}
 
 const Sidebar: React.FC<Props> = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const getStarUserTemplatesQuery = useQuery({
+    queryKey: ['starUserTemplate'],
+    queryFn: () => getStarUserTemplate(localStorage.getItem('userId') ?? ''),
+  });
+
+  const getUserTemplatesQuery = useQuery({
+    queryKey: ['userTemplate'],
+    queryFn: () => getUserTemplates(localStorage.getItem('userId') ?? ''),
+  });
+
   const getBusinessBaseTemplateQuery = useQuery({
-    queryKey: [],
+    queryKey: ['business'],
     queryFn: () => getFilteredBaseTemplatesByCategory('business'),
   });
 
@@ -45,13 +59,13 @@ const Sidebar: React.FC<Props> = () => {
           <Accordion
             tag={<StarIcon width="16px" height="16px" />}
             title="즐겨찾기"
-            list={getBusinessBaseTemplateQuery.data ?? []}
+            list={getStarUserTemplatesQuery.data ?? []}
           />
           <Border color={colors.indigo4} margin="4px 0" />
           <Accordion
             tag={<Tag color={colors.tag.red} />}
             title="그룹1"
-            list={getSchoolBaseTemplateQuery.data ?? []}
+            list={getUserTemplatesQuery.data ?? []}
           />
         </TemplateGroup>
 

@@ -1,17 +1,11 @@
-import { useState } from 'react';
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
 import Typo from '@/ui/typo/Typo';
 import { MEDIUM_0, REGULAR_6, REGULAR_7 } from '@/styles/typo';
 import TooltipIcon from '@/assets/svgs/workspace_editor_tooltip.svg?react';
-import { BaseTemplateContents } from '@/types/template';
 import Editor from '@/components/editor/Editor';
 
 const EditorSection = () => {
-  const [blocks, setBlocks] = useState<BaseTemplateContents[]>([
-    { id: Date.now().toString(), isBlock: true, text: '' },
-  ]);
-
   return (
     <Wrapper>
       <TemplateInfoWrapper>
@@ -36,7 +30,7 @@ const EditorSection = () => {
         <TooltipButton />
       </TemplateInfoWrapper>
 
-      <Editor blocks={blocks} setBlocks={setBlocks} />
+      <Editor />
 
       <SaveButton>템플릿 저장하기</SaveButton>
     </Wrapper>

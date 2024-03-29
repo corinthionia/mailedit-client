@@ -1,15 +1,7 @@
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
 import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
-import { BaseTemplateContents } from '@/types/template';
-import {
-  Dispatch,
-  KeyboardEvent,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { LIGHT_1, LIGHT_2, REGULAR_7 } from '@/styles/typo';
 import { css } from '@emotion/react';
 import { breakPoint } from '@/styles/breakPoint';
@@ -21,14 +13,11 @@ import {
   DropResult,
   Droppable,
 } from 'react-beautiful-dnd';
+import { useRecoilState } from 'recoil';
+import { BlocksAtom } from '@/recoils/blocks';
 
-interface Props {
-  blocks: BaseTemplateContents[];
-  setBlocks: Dispatch<SetStateAction<BaseTemplateContents[]>>;
-}
-
-const Editor = (props: Props) => {
-  const { blocks, setBlocks } = props;
+const Editor = () => {
+  const [blocks, setBlocks] = useRecoilState(BlocksAtom);
 
   const [command, setCommand] = useState<Command>(null);
   const [caretPosition, setCaretPosition] = useState({
@@ -322,7 +311,7 @@ const Editor = (props: Props) => {
                 {blocks.map((block, blockIndex) => (
                   <Draggable
                     draggableId={block.id}
-                    key={block.id}
+                    key={`${block.id}${blockIndex}`}
                     index={blockIndex}
                   >
                     {(provided) => (

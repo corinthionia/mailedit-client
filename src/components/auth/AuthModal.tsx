@@ -20,8 +20,9 @@ const AuthModal = (props: Props) => {
     setIsSignInModalOpen(false);
   };
 
-  const handleGoogleSignInButtonClick = () => {
-    signInWithGoogle();
+  const handleGoogleSignInButtonClick = async () => {
+    const res = await signInWithGoogle();
+    console.log(res);
   };
 
   return (
