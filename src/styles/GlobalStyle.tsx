@@ -1,4 +1,5 @@
 import { Global, css } from '@emotion/react';
+import './font.css';
 
 const reset = css`
   html,
@@ -72,12 +73,6 @@ const reset = css`
 
 const defaultStyle = css`
   ${reset};
-
-  @font-face {
-    font-family: 'Pretendard';
-    font-display: swap;
-    src: url('/src/assets/fonts/pretendard.woff2') format('woff2');
-  }
 
   * {
     font-family: 'Pretendard', Arial, Helvetica, sans-serif;
