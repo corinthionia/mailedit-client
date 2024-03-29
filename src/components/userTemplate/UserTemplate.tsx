@@ -1,12 +1,13 @@
 import { colors } from '@/styles/colors';
 import styled from '@emotion/styled';
 import Typo from '@/ui/typo/Typo';
-import { LIGHT_3, SEMI_BOLD_4 } from '@/styles/typo';
+import { LIGHT_1, LIGHT_3, SEMI_BOLD_4 } from '@/styles/typo';
 import Thumbnail from '@/components/thumbnail/Thumbnail';
 import { useRecoilValue } from 'recoil';
 import { UserAtom } from '@/recoils/user';
 import { useQuery } from '@tanstack/react-query';
 import { getUserTemplates } from '@/apis/template';
+import noTemplate from '@/assets/imgs/home_no_template.png';
 
 const UserTemplate = () => {
   const user = useRecoilValue(UserAtom);
@@ -23,12 +24,13 @@ const UserTemplate = () => {
           {`${user.name && user.name + ' 님의 '}마이템플릿`}
         </Typo>
         <Typo type={LIGHT_3}>
-          저장된 템플릿 <span>18개</span>
+          저장된 템플릿{' '}
+          <span>{`${(getUserTemplatesQuery.data ?? []).length}개`}</span>
         </Typo>
       </MyTemplateInfo>
 
       <Templates>
-        {getUserTemplatesQuery.data ? (
+        {getUserTemplatesQuery.data?.length ? (
           getUserTemplatesQuery.data?.map((template) => (
             <Thumbnail
               templateId={template.id}
@@ -39,7 +41,14 @@ const UserTemplate = () => {
             />
           ))
         ) : (
-          <div></div>
+          <NoTemplateWrapper>
+            <NoTemplateImage src={noTemplate} />
+            <Typo type={LIGHT_1}>
+              앗 아직 나의 템플릿이 없어요!
+              <br />
+              <b>첫 템플릿</b>을 만들어 보세요
+            </Typo>
+          </NoTemplateWrapper>
         )}
       </Templates>
     </Wrapper>
@@ -53,6 +62,7 @@ const Wrapper = styled.section`
   border-radius: 4px;
   overflow: hidden;
   padding: 0 0 48px 16px;
+  position: relative;
   background: ${colors.bg.light};
 `;
 
@@ -89,6 +99,26 @@ const Templates = styled.div`
   ::-webkit-scrollbar-track {
     margin-top: 18px;
   }
+`;
+
+const NoTemplateWrapper = styled.div`
+  margin: 0 auto;
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-contents: space-between;
+`;
+
+const NoTemplateImage = styled.img`
+  width: 272px;
+  height: 232px;
+  margin-bottom: 20px;
 `;
 
 export default UserTemplate;
