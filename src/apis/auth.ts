@@ -1,3 +1,4 @@
+import { routes } from '@/constants/routes';
 import { supabase } from '@/libs/supabase';
 
 export const signInWithGoogle = async () => {
@@ -6,6 +7,7 @@ export const signInWithGoogle = async () => {
     options: {
       queryParams: {
         access_type: 'offline',
+        redirectTo: `${window.location.origin}${routes.home}`,
       },
     },
   });
