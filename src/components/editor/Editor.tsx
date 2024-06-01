@@ -1,357 +1,71 @@
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
 import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
-import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { LIGHT_1, LIGHT_2, REGULAR_7 } from '@/styles/typo';
 import { css } from '@emotion/react';
 import { breakPoint } from '@/styles/breakPoint';
-import type { Command } from '@/types/command';
-import { copyTextToClipBoard } from '@/utils/copyText';
-import {
-  DragDropContext,
-  Draggable,
-  DropResult,
-  Droppable,
-} from 'react-beautiful-dnd';
-import { useRecoilState } from 'recoil';
-import { BlocksAtom } from '@/recoils/blocks';
+
+import { useEffect, useState } from 'react';
 
 const Editor = () => {
-  const [blocks, setBlocks] = useRecoilState(BlocksAtom);
+  const [blocks, setBlocks] = useState([
+    { id: Date.now().toString(), isBlock: true, content: 'supernova' },
+    {
+      id: Date.now().toString() + 1,
+      isBlock: true,
+      content: '문이열려\n서로의 존재를 느껴\n수수수퍼노바',
+    },
 
-  const [command, setCommand] = useState<Command>(null);
-  const [caretPosition, setCaretPosition] = useState({
-    blockIndex: -1,
-    lineIndex: -1,
-    characterIndex: 0,
-  });
+    {
+      id: Date.now().toString(),
+      isBlock: false,
+      content: '날 닮은 너 너 누구야',
+    },
+
+    {
+      id: Date.now().toString(),
+      isBlock: true,
+      content: '누구도 말야 수수수수퍼노바',
+    },
+  ]);
 
   const selection = window.getSelection();
-  const blocksRef = useRef<HTMLDivElement>(null);
-
-  const getNodeByIndex = (blockIndex: number, lineIndex: number) => {
-    if (!blocksRef.current) return;
-
-    return blocksRef.current.children[blockIndex].children[1].childNodes[
-      lineIndex
-    ];
-  };
-
-  const updateBlockContents = () => {
-    if (!blocksRef.current) return;
-
-    const filteredblocks = Array.from(blocksRef.current.children).filter(
-      (block) => block.children[1]
-    );
-
-    const updatedBlocks = filteredblocks.map((block, index) => {
-      const lines = Array.from(block.children[1]?.children);
-      const isBlock = block.children[1].getAttribute('data-is-block');
-
-      return {
-        id: `${Date.now().toString()} ${index}`,
-        isBlock: isBlock === 'true',
-        text: lines.map((line) => line.textContent).join('\n'),
-      };
-    });
-
-    return updatedBlocks;
-  };
-
-  // Move caret to clicked position
-  const handleClick = (blockIndex: number, lineIndex: number) => {
-    setBlocks((prev) => updateBlockContents() || prev);
-
-    setCaretPosition({
-      blockIndex,
-      lineIndex,
-      characterIndex: selection?.focusOffset ?? 0,
-    });
-  };
-
-  // Delete a Block with a backspace key
-  const deleteBlock = (blockIndex: number) => {
-    if (!blocksRef.current) return;
-
-    const updatedBlocks = updateBlockContents();
-    if (!updatedBlocks) return;
-
-    setBlocks([
-      ...updatedBlocks.slice(0, blockIndex - 1),
-      {
-        ...updatedBlocks[blockIndex - 1],
-        text:
-          updatedBlocks[blockIndex - 1].text + updatedBlocks[blockIndex].text,
-      },
-      ...updatedBlocks.slice(blockIndex + 1),
-    ]);
-  };
-
-  // Add a new line in the same block
-  const addNewLine = (blockIndex: number, lineIndex: number) => {
-    if (!blocksRef.current) return;
-
-    const updatedBlocks = updateBlockContents();
-    if (!updatedBlocks) return;
-
-    const lines = updatedBlocks[blockIndex].text.split('\n');
-
-    setBlocks([
-      ...updatedBlocks.slice(0, blockIndex === 0 ? 0 : blockIndex),
-      {
-        id: `${Date.now()}`,
-        isBlock: updatedBlocks[blockIndex].isBlock,
-        text: [
-          ...lines.slice(0, lineIndex),
-          lines[lineIndex].slice(0, selection?.focusOffset),
-          lines[lineIndex].slice(selection?.focusOffset),
-          ...lines.slice(lineIndex + 1),
-        ].join('\n'),
-      },
-      ...updatedBlocks.slice(blockIndex + 1),
-    ]);
-  };
-
-  // Add a new block
-  const addNewBlock = (blockIndex: number, lineIndex: number) => {
-    if (lineIndex === -1) {
-      return;
-    }
-
-    if (!blocksRef.current) return;
-
-    const updatedBlocks = updateBlockContents();
-    if (!updatedBlocks) return;
-
-    const lines = updatedBlocks[blockIndex].text.split('\n');
-
-    setBlocks([
-      ...updatedBlocks.slice(0, blockIndex ? blockIndex : 0),
-      {
-        id: `${Date.now()}`,
-        isBlock: false,
-        text:
-          [
-            ...lines.slice(0, lineIndex),
-            lines[lineIndex].slice(0, selection?.getRangeAt(0).endOffset ?? 0),
-          ]
-            .join('\n')
-            .trim() ?? '',
-      },
-      {
-        id: `${Number(Date.now()) + 1}`,
-        isBlock: false,
-        text:
-          [
-            updatedBlocks[blockIndex].text
-              .split('\n')
-              // eslint-disable-next-line no-unexpected-multiline
-              [lineIndex].slice(selection?.getRangeAt(0).endOffset ?? 0 + 1),
-            ...updatedBlocks[blockIndex].text.split('\n').slice(lineIndex + 1),
-          ]
-            .join('\n')
-            .trim() ?? '',
-      },
-      ...updatedBlocks.slice(blockIndex + 1),
-    ]);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    // 현재 블록 삭제
-    if (
-      e.key === 'Backspace' &&
-      caretPosition.blockIndex !== 0 &&
-      caretPosition.lineIndex === 0 &&
-      selection?.focusOffset === 0
-    ) {
-      e.preventDefault();
-      deleteBlock(caretPosition.blockIndex);
-      setCommand('Backspace');
-    }
-
-    // 현재 블록 내에서 줄 바꿈
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault();
-      addNewLine(caretPosition.blockIndex, caretPosition.lineIndex);
-      setCommand('ShiftEnter');
-    }
-
-    // 새로운 블록 추가
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      addNewBlock(caretPosition.blockIndex, caretPosition.lineIndex);
-      setCommand('Enter');
-    }
-  };
 
   useEffect(() => {
-    const { blockIndex, lineIndex } = caretPosition;
-
-    if (blockIndex === -1 || lineIndex === -1) {
-      return;
-    }
-
-    if (command === 'Enter') {
-      setCaretPosition((prev) => ({
-        blockIndex: prev.blockIndex + 1,
-        lineIndex: 0,
-        characterIndex: 0,
-      }));
-
-      setCommand(null);
-      return;
-    }
-
-    if (command === 'ShiftEnter') {
-      setCaretPosition((prev) => ({
-        ...prev,
-        lineIndex: prev.lineIndex + 1,
-        characterIndex: 0,
-      }));
-
-      setCommand(null);
-      return;
-    }
-
-    if (
-      command === 'Backspace' &&
-      lineIndex === 0 &&
-      (selection?.focusOffset ?? 0) === 0
-    ) {
-      setCaretPosition((prev) => ({
-        blockIndex: prev.blockIndex - 1,
-        lineIndex: 0, // TODO 값 구하기
-        characterIndex:
-          getNodeByIndex(prev.blockIndex - 1, 0)?.textContent?.length ?? 0,
-      }));
-
-      setCommand(null);
-      return;
-    }
-  }, [blocks, caretPosition, command, selection?.focusOffset]);
-
-  useEffect(() => {
-    if (
-      selection &&
-      blocksRef.current &&
-      caretPosition.blockIndex !== -1 &&
-      caretPosition.lineIndex !== -1
-    ) {
-      updateBlockContents();
-
-      const range = document.createRange();
-
-      const currentNode =
-        blocksRef.current.children[caretPosition.blockIndex].children[1]
-          .childNodes[caretPosition.lineIndex];
-
-      if (currentNode.childNodes.length) {
-        range.setStart(currentNode.childNodes[0], caretPosition.characterIndex);
-      } else {
-        range.setStart(currentNode, 0);
-      }
-
-      range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-  }, [caretPosition, selection]);
-
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const animation = requestAnimationFrame(() => setEnabled(true));
-
-    return () => {
-      cancelAnimationFrame(animation);
-      setEnabled(false);
-    };
-  }, []);
-
-  if (!enabled) {
-    return null;
-  }
-
-  const handleCopyButton = async () => {
-    if (blocksRef.current) {
-      const text = Array.from(blocksRef.current.childNodes)
-        .map((block) =>
-          Array.from(block.childNodes[1].childNodes)
-            .map((line) => line.textContent)
-            .join('\n')
-        )
-        .join('\n\n');
-
-      await copyTextToClipBoard(text);
-    }
-  };
-
-  const handleDragEnd = ({ source, destination }: DropResult) => {
-    if (!destination) return;
-
-    const newList = updateBlockContents() ?? blocks;
-    const [slice] = newList.splice(source.index, 1);
-    newList.splice(destination.index, 0, slice);
-
-    setBlocks(newList);
-  };
+    console.log(selection);
+    console.log(setBlocks);
+  }, [selection]);
 
   return (
     <Wrapper>
-      <CopyButton onClick={handleCopyButton}>복사하기</CopyButton>
+      <CopyButton>복사하기</CopyButton>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="droppable">
-          {(droppableProvided) => (
-            <DroppableArea
-              ref={droppableProvided.innerRef}
-              {...droppableProvided.droppableProps}
+      <Blocks>
+        {blocks.map((block, blockIndex) => (
+          <BlockWrapper>
+            <GrabButton>
+              <GrabIcon width="6px" height="12px" />
+            </GrabButton>
+            <Block
+              spellCheck
+              contentEditable
+              isBlock={block.isBlock}
+              data-block-index={blockIndex}
+              data-is-block={block.isBlock}
+              suppressContentEditableWarning
             >
-              <Blocks ref={blocksRef}>
-                {blocks.map((block, blockIndex) => (
-                  <Draggable
-                    draggableId={block.id}
-                    key={`${block.id}${blockIndex}`}
-                    index={blockIndex}
-                  >
-                    {(provided) => (
-                      <BlockWrapper
-                        ref={provided.innerRef}
-                        {...provided.dragHandleProps}
-                        {...provided.draggableProps}
-                      >
-                        <GrabButton>
-                          <GrabIcon width="6px" height="12px" />
-                        </GrabButton>
-                        <Block
-                          spellCheck
-                          contentEditable
-                          onKeyDown={handleKeyDown}
-                          isBlock={block.isBlock}
-                          data-block-index={blockIndex}
-                          data-is-block={block.isBlock}
-                          suppressContentEditableWarning
-                        >
-                          {block.text.split('\n').map((line, lineIndex) => (
-                            <div
-                              key={`${Date.now().toString()} ${line}`}
-                              data-line-index={lineIndex}
-                              onClick={() => handleClick(blockIndex, lineIndex)}
-                            >
-                              {line}
-                            </div>
-                          ))}
-                        </Block>
-                      </BlockWrapper>
-                    )}
-                  </Draggable>
-                ))}
-                {droppableProvided.placeholder}
-              </Blocks>
-            </DroppableArea>
-          )}
-        </Droppable>
-      </DragDropContext>
+              {block.content.split('\n').map((line, lineIndex) => (
+                <div
+                  key={`${Date.now().toString()} ${line}`}
+                  data-line-index={lineIndex}
+                >
+                  {line}
+                </div>
+              ))}
+            </Block>
+          </BlockWrapper>
+        ))}
+      </Blocks>
     </Wrapper>
   );
 };
@@ -369,10 +83,10 @@ const Wrapper = styled.div`
   overflow: hidden;
 `;
 
-const DroppableArea = styled.div`
-  width: 100%;
-  height: 100%;
-`;
+// const DroppableArea = styled.div`
+//   width: 100%;
+//   height: 100%;
+// `;
 
 const CopyButton = styled.span`
   ${REGULAR_7};

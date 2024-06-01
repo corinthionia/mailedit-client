@@ -11,7 +11,7 @@ export interface BaseTemplate {
 export interface BaseTemplateContents {
   id: string;
   isBlock: boolean;
-  text: string;
+  content: string;
 }
 
 export type BaseTemplateCategory = 'school' | 'business';
