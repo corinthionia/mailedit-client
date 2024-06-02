@@ -4,37 +4,96 @@ import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
 import { LIGHT_1, LIGHT_2, REGULAR_7 } from '@/styles/typo';
 import { css } from '@emotion/react';
 import { breakPoint } from '@/styles/breakPoint';
-
 import { useEffect, useState } from 'react';
 
 const Editor = () => {
   const [blocks, setBlocks] = useState([
-    { id: Date.now().toString(), isBlock: true, content: 'supernova' },
+    { id: Date.now().toString(), isBlock: true, content: '테스트합니다' },
     {
       id: Date.now().toString() + 1,
       isBlock: true,
-      content: '문이열려\n서로의 존재를 느껴\n수수수퍼노바',
+      content: '가나다라\n마바사\n아자차카',
     },
 
     {
       id: Date.now().toString(),
       isBlock: false,
-      content: '날 닮은 너 너 누구야',
+      content: '타파하하하하하하하',
     },
 
     {
       id: Date.now().toString(),
       isBlock: true,
-      content: '누구도 말야 수수수수퍼노바',
+      content: 'abcdefghijklmnop',
     },
   ]);
 
   const selection = window.getSelection();
 
+  const handleSelect = (blockIndex: number) => {
+    if (!selection) return;
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+
+    if (anchorNode === focusNode && anchorOffset === focusOffset) {
+      return;
+    }
+
+    const blockNodes = document.querySelectorAll('.block');
+    const blockText = blockNodes[blockIndex].textContent;
+    console.log(blockText);
+  };
+
+  const [caret, setCaret] = useState({
+    blockIndex: 0,
+    startIndex: 0,
+    endIndex: 0,
+  });
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLDivElement>,
+    blockIndex: number
+  ) => {
+    if (!selection) return;
+
+    // 아래에 새로운 블록 추가
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+
+      setCaret({
+        blockIndex,
+        startIndex: selection.anchorOffset,
+        endIndex: selection.anchorOffset,
+      });
+
+      setBlocks((prev) => [
+        ...prev.slice(0, blockIndex),
+        {
+          id: Date.now().toString(),
+          isBlock: false,
+          content: prev[blockIndex].content.slice(0, selection.anchorOffset),
+        },
+        {
+          id: (Date.now() + 1).toString(),
+          isBlock: false,
+          content: prev[blockIndex].content
+            .slice(selection.anchorOffset)
+            .trim(),
+        },
+        ...prev.slice(blockIndex + 1),
+      ]);
+    }
+  };
+
   useEffect(() => {
-    console.log(selection);
-    console.log(setBlocks);
-  }, [selection]);
+    const blockNodes = document.querySelectorAll('.block');
+
+    const range = document.createRange();
+    range.setStart(blockNodes[caret.blockIndex + 1], 0);
+    range.collapse(true);
+
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, [caret, selection]);
 
   return (
     <Wrapper>
@@ -53,15 +112,11 @@ const Editor = () => {
               data-block-index={blockIndex}
               data-is-block={block.isBlock}
               suppressContentEditableWarning
+              className="block"
+              onSelect={() => handleSelect(blockIndex)}
+              onKeyDown={(e) => handleKeyDown(e, blockIndex)}
             >
-              {block.content.split('\n').map((line, lineIndex) => (
-                <div
-                  key={`${Date.now().toString()} ${line}`}
-                  data-line-index={lineIndex}
-                >
-                  {line}
-                </div>
-              ))}
+              {block.content}
             </Block>
           </BlockWrapper>
         ))}
@@ -82,11 +137,6 @@ const Wrapper = styled.div`
   padding: 16px 18px;
   overflow: hidden;
 `;
-
-// const DroppableArea = styled.div`
-//   width: 100%;
-//   height: 100%;
-// `;
 
 const CopyButton = styled.span`
   ${REGULAR_7};
