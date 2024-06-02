@@ -30,9 +30,9 @@ const Editor = () => {
 
   const selection = window.getSelection();
 
-  const [action, setAction] = useState<null | 'add' | 'select' | 'blockize'>(
-    null
-  );
+  const [action, setAction] = useState<
+    null | 'add' | 'select' | 'blockize' | 'delete'
+  >(null);
 
   const [isBlockizeButtonVisible, setIsBlockizeButtonVisible] =
     useState<boolean>(false);
@@ -52,6 +52,12 @@ const Editor = () => {
     if (!selection) return;
     const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
 
+    setCaret({
+      blockIndex,
+      startIndex: anchorOffset,
+      endIndex: focusOffset,
+    });
+
     if (anchorNode === focusNode && anchorOffset === focusOffset) {
       setIsBlockizeButtonVisible(false);
       setAction(null);
@@ -61,11 +67,6 @@ const Editor = () => {
     const block = document.querySelectorAll('.block')[blockIndex];
 
     setAction('select');
-    setCaret({
-      blockIndex,
-      startIndex: anchorOffset,
-      endIndex: focusOffset,
-    });
 
     setBlockizeButtonPosition({
       top: block.getBoundingClientRect().top,
@@ -80,7 +81,11 @@ const Editor = () => {
     if (!selection) return;
 
     // 아래에 새로운 블록 추가
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (
+      e.key === 'Enter' &&
+      !e.shiftKey &&
+      e.nativeEvent.isComposing === false
+    ) {
       e.preventDefault();
 
       setAction('add');
@@ -104,6 +109,36 @@ const Editor = () => {
           content: prev[blockIndex].content
             .slice(selection.anchorOffset)
             .trim(),
+        },
+        ...prev.slice(blockIndex + 1),
+      ]);
+    }
+
+    // 현재 블록 삭제하고 이전 블록과 합치기
+    if (
+      e.key === 'Backspace' &&
+      blockIndex !== 0 &&
+      selection.anchorOffset === 0 &&
+      selection.focusOffset === 0
+    ) {
+      const blockNodes = document.querySelectorAll('.block');
+      const prevBlock = blockNodes[blockIndex - 1].childNodes?.[0]?.textContent;
+      const currBlock = blockNodes[blockIndex].childNodes?.[0]?.textContent;
+
+      setCaret({
+        blockIndex: caret.blockIndex,
+        startIndex: (prevBlock ?? '').length + 1,
+        endIndex: (prevBlock ?? '').length + 1,
+      });
+
+      setAction('delete');
+
+      setBlocks((prev) => [
+        ...prev.slice(0, blockIndex - 1),
+        {
+          id: Date.now().toString(),
+          isBlock: false,
+          content: [prevBlock ?? ' ', currBlock ?? ' '].join(' '),
         },
         ...prev.slice(blockIndex + 1),
       ]);
@@ -162,6 +197,20 @@ const Editor = () => {
       selection?.addRange(range);
 
       setIsBlockizeButtonVisible(true);
+    }
+
+    if (action === 'delete') {
+      const blockNodes = document.querySelectorAll('.block');
+
+      const range = document.createRange();
+      range.setStart(
+        blockNodes[caret.blockIndex - 1].childNodes[0],
+        caret.endIndex
+      );
+      range.collapse(true);
+
+      selection?.removeAllRanges();
+      selection?.addRange(range);
     }
   }, [caret, selection, action, isBlockizeButtonVisible]);
 
