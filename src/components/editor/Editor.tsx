@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { colors } from '@/styles/colors';
 import GrabIcon from '@/assets/svgs/workspace_editor_grab.svg?react';
-import { LIGHT_1, LIGHT_2, REGULAR_7 } from '@/styles/typo';
+import { LIGHT_1, LIGHT_2, MEDIUM_5, REGULAR_7 } from '@/styles/typo';
 import { css } from '@emotion/react';
 import { breakPoint } from '@/styles/breakPoint';
 import { useEffect, useState } from 'react';
@@ -30,24 +30,48 @@ const Editor = () => {
 
   const selection = window.getSelection();
 
-  const handleSelect = (blockIndex: number) => {
-    if (!selection) return;
-    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+  const [action, setAction] = useState<null | 'add' | 'select' | 'blockize'>(
+    null
+  );
 
-    if (anchorNode === focusNode && anchorOffset === focusOffset) {
-      return;
-    }
-
-    const blockNodes = document.querySelectorAll('.block');
-    const blockText = blockNodes[blockIndex].textContent;
-    console.log(blockText);
-  };
+  const [isBlockizeButtonVisible, setIsBlockizeButtonVisible] =
+    useState<boolean>(false);
 
   const [caret, setCaret] = useState({
     blockIndex: 0,
     startIndex: 0,
     endIndex: 0,
   });
+
+  const [blockizeButtonPosition, setBlockizeButtonPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const handleSelect = (blockIndex: number) => {
+    if (!selection) return;
+    const { anchorNode, anchorOffset, focusNode, focusOffset } = selection;
+
+    if (anchorNode === focusNode && anchorOffset === focusOffset) {
+      setIsBlockizeButtonVisible(false);
+      setAction(null);
+      return;
+    }
+
+    const block = document.querySelectorAll('.block')[blockIndex];
+
+    setAction('select');
+    setCaret({
+      blockIndex,
+      startIndex: anchorOffset,
+      endIndex: focusOffset,
+    });
+
+    setBlockizeButtonPosition({
+      top: block.getBoundingClientRect().top,
+      left: block.getBoundingClientRect().left,
+    });
+  };
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLDivElement>,
@@ -58,6 +82,8 @@ const Editor = () => {
     // 아래에 새로운 블록 추가
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+
+      setAction('add');
 
       setCaret({
         blockIndex,
@@ -84,46 +110,117 @@ const Editor = () => {
     }
   };
 
+  const handleBlockizeButtonClick = () => {
+    setAction('blockize');
+    const { blockIndex, startIndex, endIndex } = caret;
+
+    setBlocks((prev) => [
+      ...prev.slice(0, blockIndex),
+      {
+        id: Date.now().toString(),
+        isBlock: false,
+        content: prev[blockIndex].content.slice(0, startIndex),
+      },
+      {
+        id: (Date.now() + 1).toString(),
+        isBlock: true,
+        content: prev[blockIndex].content.slice(startIndex, endIndex).trim(),
+      },
+      {
+        id: (Date.now() + 2).toString(),
+        isBlock: false,
+        content: prev[blockIndex].content.slice(endIndex).trim(),
+      },
+      ...prev.slice(blockIndex + 1),
+    ]);
+
+    setIsBlockizeButtonVisible(false);
+  };
+
   useEffect(() => {
-    const blockNodes = document.querySelectorAll('.block');
+    if (action === 'add') {
+      const blockNodes = document.querySelectorAll('.block');
 
-    const range = document.createRange();
-    range.setStart(blockNodes[caret.blockIndex + 1], 0);
-    range.collapse(true);
+      const range = document.createRange();
+      range.setStart(blockNodes[caret.blockIndex + 1], 0);
+      range.collapse(true);
 
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-  }, [caret, selection]);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+
+    if (action === 'select' && !isBlockizeButtonVisible) {
+      const range = document.createRange();
+
+      const blockNode =
+        document.querySelectorAll('.block')[caret.blockIndex].childNodes[0];
+
+      range.setStart(blockNode, caret.startIndex);
+      range.setEnd(blockNode, caret.endIndex);
+
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+
+      setIsBlockizeButtonVisible(true);
+    }
+  }, [caret, selection, action, isBlockizeButtonVisible]);
 
   return (
-    <Wrapper>
-      <CopyButton>복사하기</CopyButton>
+    <>
+      <Wrapper>
+        <CopyButton>복사하기</CopyButton>
 
-      <Blocks>
-        {blocks.map((block, blockIndex) => (
-          <BlockWrapper>
-            <GrabButton>
-              <GrabIcon width="6px" height="12px" />
-            </GrabButton>
-            <Block
-              spellCheck
-              contentEditable
-              isBlock={block.isBlock}
-              data-block-index={blockIndex}
-              data-is-block={block.isBlock}
-              suppressContentEditableWarning
-              className="block"
-              onSelect={() => handleSelect(blockIndex)}
-              onKeyDown={(e) => handleKeyDown(e, blockIndex)}
-            >
-              {block.content}
-            </Block>
-          </BlockWrapper>
-        ))}
-      </Blocks>
-    </Wrapper>
+        <Blocks>
+          {blocks.map((block, blockIndex) => (
+            <BlockWrapper>
+              <GrabButton>
+                <GrabIcon width="6px" height="12px" />
+              </GrabButton>
+              <Block
+                spellCheck
+                contentEditable
+                isBlock={block.isBlock}
+                data-block-index={blockIndex}
+                data-is-block={block.isBlock}
+                suppressContentEditableWarning
+                className="block"
+                onSelect={() => handleSelect(blockIndex)}
+                onKeyDown={(e) => handleKeyDown(e, blockIndex)}
+              >
+                {block.content}
+              </Block>
+            </BlockWrapper>
+          ))}
+        </Blocks>
+      </Wrapper>
+
+      {isBlockizeButtonVisible && (
+        <BlockizeButton
+          top={blockizeButtonPosition.top - 24}
+          left={blockizeButtonPosition.left}
+          onClick={handleBlockizeButtonClick}
+        >
+          블록 만들기
+        </BlockizeButton>
+      )}
+    </>
   );
 };
+
+const BlockizeButton = styled.button<{ top: number; left: number }>`
+  ${MEDIUM_5};
+  width: 75px;
+  height: 28px;
+  padding: 4px 10px;
+  background: ${colors.bg.light};
+  box-shadow: 0px 0px 10px 0px ${colors.bg.indigo};
+  border-radius: 4px;
+
+  position: fixed;
+  top: ${(props) => props.top}px;
+  left: ${(props) => props.left}px;
+  z-index: 2;
+`;
 
 const Wrapper = styled.div`
   background: ${colors.bg.light};
