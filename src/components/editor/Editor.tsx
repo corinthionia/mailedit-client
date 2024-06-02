@@ -100,7 +100,7 @@ const Editor = () => {
         ...prev.slice(0, blockIndex),
         {
           id: Date.now().toString(),
-          isBlock: false,
+          isBlock: prev[blockIndex].isBlock,
           content: prev[blockIndex].content.slice(0, selection.anchorOffset),
         },
         {
@@ -122,13 +122,13 @@ const Editor = () => {
       selection.focusOffset === 0
     ) {
       const blockNodes = document.querySelectorAll('.block');
-      const prevBlock = blockNodes[blockIndex - 1].childNodes?.[0]?.textContent;
-      const currBlock = blockNodes[blockIndex].childNodes?.[0]?.textContent;
+      const prevBlock = blockNodes[blockIndex - 1].childNodes?.[0];
+      const currBlock = blockNodes[blockIndex].childNodes?.[0];
 
       setCaret({
         blockIndex: caret.blockIndex,
-        startIndex: (prevBlock ?? '').length + 1,
-        endIndex: (prevBlock ?? '').length + 1,
+        startIndex: (prevBlock?.textContent ?? '').length + 1,
+        endIndex: (prevBlock?.textContent ?? '').length + 1,
       });
 
       setAction('delete');
@@ -137,8 +137,12 @@ const Editor = () => {
         ...prev.slice(0, blockIndex - 1),
         {
           id: Date.now().toString(),
-          isBlock: false,
-          content: [prevBlock ?? ' ', currBlock ?? ' '].join(' '),
+          isBlock:
+            blockNodes[blockIndex - 1].getAttribute('data-is-block') === 'true',
+          content: [
+            prevBlock?.textContent ?? ' ',
+            currBlock?.textContent ?? ' ',
+          ].join(' '),
         },
         ...prev.slice(blockIndex + 1),
       ]);
@@ -229,7 +233,6 @@ const Editor = () => {
                 spellCheck
                 contentEditable
                 isBlock={block.isBlock}
-                data-block-index={blockIndex}
                 data-is-block={block.isBlock}
                 suppressContentEditableWarning
                 className="block"
